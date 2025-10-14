@@ -48,7 +48,7 @@ static void run_update() {
     }
 
     // Step 1: Pull latest changes from GitHub
-    int git_result = system("git pull origin main");
+    int git_result = system("git pull origin master");
 
     if (git_result != 0) {
         std::cout << "Update failed: git pull did not succeed.\n";
