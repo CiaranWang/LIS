@@ -42,7 +42,7 @@ static void run_update() {
     if (!fs::exists(".git") || !fs::is_directory(".git")) {
         std::cout << "Warning: This folder is not a git repository.\n";
         std::cout << "To enable auto-update, clone the repository from GitHub:\n";
-        std::cout << "  git clone https://github.com/YourUsername/LIS.git\n";
+        std::cout << "  git clone https://github.com/CiaranWang/LIS.git\n";
         std::cout << "Then run: ./LIS --update\n";
         return;
     }
