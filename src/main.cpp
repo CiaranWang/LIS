@@ -34,46 +34,39 @@ static void print_version() {
     std::cout << "LIS Version: " << PROGRAM_VERSION << std::endl;
 }
 
-static void run_update() {
-    std::cout << "[UPDATE] Attempting to update from GitHub..." << std::endl;
+fs::path get_lis_root(char* argv0) {
+    fs::path exePath = fs::absolute(argv0);      // /ROOTPATH/build/LIS
+    fs::path exeDir = exePath.parent_path();    // /ROOTPATH/build
+    fs::path rootDir = exeDir.parent_path();    // /ROOTPATH
+    return rootDir;
+}
+
+static void run_update(char* argv0) {
+    fs::path lis_root = get_lis_root(argv0);
+
+    std::cout << "[UPDATE] Attempting to update LIS in: " << lis_root << std::endl;
     std::cout << "Make sure you have 'git', 'cmake', and 'make' installed." << std::endl;
 
     // Check if .git folder exists
-    if (!fs::exists(".git") || !fs::is_directory(".git")) {
-        std::cout << "Warning: This folder is not a git repository.\n";
-        std::cout << "To enable auto-update, clone the repository from GitHub:\n";
+    if (!fs::exists(lis_root / ".git") || !fs::is_directory(lis_root / ".git")) {
+        std::cout << "Warning: LIS root folder is not a git repository.\n";
+        std::cout << "Clone the repository and try again:\n";
         std::cout << "  git clone https://github.com/CiaranWang/LIS.git\n";
-        std::cout << "Then run: ./LIS --update\n";
         return;
     }
 
-    // Step 1: Pull latest changes from GitHub
-    int git_result = system("git pull origin master");
-
-    if (git_result != 0) {
-        std::cout << "Update failed: git pull did not succeed.\n";
+    // Pull latest changes
+    std::string git_cmd = "cd \"" + lis_root.string() + "\" && git pull origin master";
+    if (system(git_cmd.c_str()) != 0) {
+        std::cout << "Git pull failed.\n";
         return;
     }
 
-    std::cout << "Git pull completed successfully.\n";
-
-    // Step 2: Create build folder if it doesn't exist
-    int mkdir_result = system("mkdir -p build");
-    if (mkdir_result != 0) {
-        std::cout << "Warning: Could not create build folder. You may need to create it manually.\n";
-    }
-
-    // Step 3: Run CMake
-    int cmake_result = system("cd build && cmake ..");
-    if (cmake_result != 0) {
-        std::cout << "CMake configuration failed. Please run 'cmake ..' manually inside build folder.\n";
-        return;
-    }
-
-    // Step 4: Build the project
-    int make_result = system("cd build && make -j 8");
-    if (make_result != 0) {
-        std::cout << "Build failed. Please check for compilation errors.\n";
+    // Build project
+    std::string build_cmd =
+        "cd \"" + lis_root.string() + "\" && mkdir -p build && cd build && cmake .. && make -j 8";
+    if (system(build_cmd.c_str()) != 0) {
+        std::cout << "Build failed.\n";
         return;
     }
 
@@ -93,7 +86,7 @@ int main(int argc, char* argv[])
             return 0;
         }
         if (arg1 == "--update" || arg1 == "-u") {
-            run_update();
+            run_update(argv[0]);
             return 0;
         }
     }

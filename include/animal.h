@@ -5,11 +5,14 @@
 
 class animal {
 public:
-	string id;
-	void set_id(string _ID_);
+	animal();   // Declaration of constructor
+
+	std::string id;
+	void set_id(std::string _ID_);
 
 	int pen;
 	void set_pen(int _PEN_);
+	
 	double x;
 	double y;
 	double angle;

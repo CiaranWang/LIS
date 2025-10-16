@@ -10,6 +10,31 @@
 using namespace std;
 // this file define features of turkeys
 
+animal::animal() :
+	id(""),
+	pen(0),
+	x(0.0), y(0.0), angle(0.0),
+	new_x(0.0), new_y(0.0),
+	behavior_code(1),
+	trait_p(0.0), trait_r(0.0), trait_s(0.0), trait_n(0.0)
+{
+	for (int i = 0; i < 3; ++i) {
+		motivation[i] = 0.0;
+		threshold[i] = 100.0;
+	}
+
+	for (int i = 0; i < n_animal; ++i) {
+		n_peck[i] = 0;
+		n_interact[i] = 0;
+		n_meet[i] = 0;
+	}
+
+	pro_theta[0] = 1.0;
+	for (int i = 1; i < n_theta; ++i) {
+		pro_theta[i] = 0.0;
+	}
+}
+
 void animal::set_pos_(double _X_, double _Y_) {
 	//position of turkeys
 	if (_X_ < 0 || _X_ > lx || _Y_ <0 || _Y_ > ly)
