@@ -198,9 +198,7 @@ int main(int argc, char* argv[])
         if (!per_in) continue;
 
         string line;
-        bool skip_header = (pen != 1);
         while (getline(per_in, line)) {
-            if (skip_header) { skip_header = false; continue; }
             final_out << line << "\n";
         }
 
