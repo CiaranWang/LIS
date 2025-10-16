@@ -103,7 +103,7 @@ int select_rnd_direction(animal _T_) {
 	return random;
 }
 
-double calc_heatmap_XY(int _I_, double _X_, double _Y_)
+double calc_heatmap_XY(animal t[n_animal], int _I_, double _X_, double _Y_)
 {
 	double density = 0;
 	double r_square = 0;
@@ -125,7 +125,7 @@ double calc_heatmap_XY(int _I_, double _X_, double _Y_)
 	return density;
 }
 
-double calc_heatmap_RHOTHETA(int _I_, double _RHO_, double _THETA_)
+double calc_heatmap_RHOTHETA(animal t[n_animal], int _I_, double _RHO_, double _THETA_)
 {
 	double density = 0.0;
 
@@ -144,7 +144,7 @@ double calc_heatmap_RHOTHETA(int _I_, double _RHO_, double _THETA_)
 	return density;
 }
 
-double calc_weighed_density_orientation(int _I_, double _THETA_)
+double calc_weighed_density_orientation(animal t[n_animal], int _I_, double _THETA_)
 {
 	double integral = 0.0;
 	const int iteration = 500;
@@ -153,7 +153,7 @@ double calc_weighed_density_orientation(int _I_, double _THETA_)
 	for (int k = 0; k < iteration; k++)
 	{
 		double r = k * delta_r;
-		double delta_p = calc_heatmap_RHOTHETA(_I_, r, _THETA_) * delta_r;
+		double delta_p = calc_heatmap_RHOTHETA(t, _I_, r, _THETA_) * delta_r;
 
 		double weighed_factor = norm_factor * std::exp(-r * r * inv_two_sigma2);
 

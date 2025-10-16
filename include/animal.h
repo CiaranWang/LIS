@@ -57,7 +57,7 @@ public:
 
 double d_sqr(animal _T1_, animal _T2_);
 double distance(animal _T1_, animal _T2_);
-void alter_prob_density(int _I_);
-void alter_prob_density_trait_s(int _I_);
+void alter_prob_density(animal t[n_animal], int _I_);
+void alter_prob_density_trait_s(animal t[n_animal], int _I_);
 
 #endif

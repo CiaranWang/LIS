@@ -37,6 +37,8 @@ void run_pen(const string& infile, int _PEN_,
 
 	define_feeders_detti(); // call define feeders
 
+	animal t[n_animal];
+
 	for (int i = 0; i < n_animal; i++)
 	{
 		t[i].initialize_(rng); // initialize the status of the turkey
@@ -126,7 +128,7 @@ void run_pen(const string& infile, int _PEN_,
 			}
 			else if (t[i].behavior_code == 2) //random walk
 			{
-				alter_prob_density_trait_s(i);
+				alter_prob_density_trait_s(t, i);
 				//report_pro_theta(t[i]);
 				for (int j = 0; j < n_animal; j++)
 				{

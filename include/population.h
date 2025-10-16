@@ -15,8 +15,6 @@
 
 using namespace std;
 
-extern animal t[n_animal];
-
 void read_pheno(const std::string& _INFILE_, int _PEN_);
 
 #endif

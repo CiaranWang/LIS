@@ -135,19 +135,19 @@ void animal::alter_prob_uniform() {
 	}
 }
 
-void alter_prob_density(int _I_) 
+void alter_prob_density(animal t[n_animal], int _I_) 
 {
 	for (int i = 0; i < n_theta; i++)
 	{
-		t[_I_].pro_theta[i] = calc_weighed_density_orientation(_I_, i * unit_angle);
+		t[_I_].pro_theta[i] = calc_weighed_density_orientation(t, _I_, i * unit_angle);
 	}
 
 	t[_I_].normalize_prob();
 }
 
-void alter_prob_density_trait_s(int _I_)
+void alter_prob_density_trait_s(animal t[n_animal], int _I_)
 {
-	alter_prob_density(_I_);
+	alter_prob_density(t, _I_);
 	double factor = logistic(t[_I_].trait_s, -1, 0) * 2 - 1;
 	for (int i = 0; i < n_theta; i++)
 	{
