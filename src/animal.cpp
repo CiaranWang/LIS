@@ -78,20 +78,20 @@ void animal::initialize_(std::mt19937& rng) {
 	}
 
 	//generate random starting status
-	motivation[0] = uniformrand(rng, 0, 100); // code 0
-	motivation[1] = uniformrand(rng, 0, 100); // code 1
-	motivation[2] = uniformrand(rng, 0, 100); // code 2
+	motivation[0] = uniformrand(rng, 0.0, 100.0); // code 0
+	motivation[1] = uniformrand(rng, 0.0, 100.0); // code 1
+	motivation[2] = 100.0 - motivation[1]; // code 2
 
-	threshold[0] = 100; // code 0
-	threshold[1] = 100; // code 1
-	threshold[2] = 100; // code 2
+	threshold[0] = 100.0; // code 0
+	threshold[1] = 100.0; // code 1
+	threshold[2] = 100.0; // code 2
 
 	behavior_code = 1;
 
-	trait_p = 0;
-	trait_r = 0;
-	trait_s = 0;
-	trait_n = 0;
+	trait_p = 0.0;
+	trait_r = 0.0;
+	trait_s = 0.0;
+	trait_n = 0.0;
 	
 }
 
