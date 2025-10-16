@@ -15,6 +15,6 @@
 
 using namespace std;
 
-void read_pheno(const std::string& _INFILE_, int _PEN_);
+void read_pheno(animal t[n_animal], const std::string& _INFILE_, int _PEN_);
 
 #endif

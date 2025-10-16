@@ -10,7 +10,8 @@
 #include "random.h"
 
 using namespace std;
-double feeder[n_feeder][3]{0};
+
+double feeder[n_feeder][3]{ 0 };
 
 const double norm_factor = 1.0 / 0.477 / std::sqrt(2.0 * pi * sigma_blur);
 const double inv_two_sigma2 = 1.0 / (2.0 * sigma_blur * sigma_blur);

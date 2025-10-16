@@ -35,8 +35,6 @@ void run_pen(const string& infile, int _PEN_,
 	video_name = outpath + "\\Turkeymotion_Video.mp4";
 	VideoWriter video(video_name, VideoWriter::fourcc('P', 'I', 'M', '1'), 15.0, Size(1000, 1000), 1);*/
 
-	define_feeders_detti(); // call define feeders
-
 	animal t[n_animal];
 
 	for (int i = 0; i < n_animal; i++)
@@ -45,7 +43,7 @@ void run_pen(const string& infile, int _PEN_,
 		//report_pro_theta(t[i]);
 	}
 
-	read_pheno(infile, _PEN_); // created in R
+	read_pheno(t, infile, _PEN_); // created in R
 	//std::cout << "Pen " << _PEN_ << ": feeder set up, motivation initialized, phenotypes read\n";
 	
 	int step = 0;

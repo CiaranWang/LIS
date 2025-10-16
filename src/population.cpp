@@ -13,9 +13,7 @@
 
 using namespace std;
 
-animal t[n_animal]{};
-
-void read_pheno(const std::string& _INFILE_, int _PEN_) // pen starts from 1 not 0
+void read_pheno(animal t[n_animal], const std::string& _INFILE_, int _PEN_) // pen starts from 1 not 0
 {
 	std::ifstream infile(_INFILE_);
 	if (!infile) {

@@ -140,6 +140,8 @@ int main(int argc, char* argv[])
     }
 
     int nPens = 400;
+    
+    define_feeders_detti();
 
     // ---- Run pens in parallel with OpenMP ----
     #pragma omp parallel for schedule(dynamic)

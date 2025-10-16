@@ -262,7 +262,7 @@ void animal::normalize_prob() {
 
 }
 
-void animal::set_id(string _ID_)
+void animal::set_id(std::string _ID_)
 {
 	id = _ID_;
 }
