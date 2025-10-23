@@ -36,12 +36,14 @@ void run_pen(const string& infile, int _PEN_,
 	VideoWriter video(video_name, VideoWriter::fourcc('P', 'I', 'M', '1'), 15.0, Size(1000, 1000), 1);*/
 
 	animal t[n_animal];
-
 	for (int i = 0; i < n_animal; i++)
 	{
 		t[i].initialize_(rng); // initialize the status of the turkey
 		//report_pro_theta(t[i]);
 	}
+
+	double feeder[n_feeder][3]{ 0 };
+	define_feeders_detti(feeder);
 
 	read_pheno(t, infile, _PEN_); // created in R
 	//std::cout << "Pen " << _PEN_ << ": feeder set up, motivation initialized, phenotypes read\n";
@@ -58,7 +60,7 @@ void run_pen(const string& infile, int _PEN_,
 
 			if (t[i].behavior_code == 0) // feed
 			{
-				int feeder_code = choose_feeder(t[i]); // choose nearest unoccupied
+				int feeder_code = choose_feeder(feeder, t[i]); // choose nearest unoccupied
 
 				if (feeder_code == -1) // all feeders taken
 				{
@@ -275,4 +277,35 @@ void run_pen(const string& infile, int _PEN_,
 	}*/
 
 	//cout<< "the end of pen: " << _PEN_ << endl;
+}
+void define_feeders(double(&feeder)[n_feeder][3]) {
+
+	if (n_feeder >= 2)
+	{
+		for (int i = 0; i < n_feeder / 2; i++)
+		{
+			feeder[i][0] = 0;
+			feeder[i][1] = i * ly / (n_feeder / 2.0) + ly / n_feeder;
+
+			feeder[i + n_feeder / 2][0] = lx;
+			feeder[i + n_feeder / 2][1] = i * ly / (n_feeder / 2.0) + ly / n_feeder;
+		}
+
+		for (int i = 0; i < n_feeder; i++)
+		{
+			feeder[i][2] = 0;
+		}
+	}
+}
+void define_feeders_detti(double(&feeder)[n_feeder][3]) {
+	for (int i = 0; i < n_feeder; i++)
+	{
+		feeder[i][0] = 0;
+		feeder[i][1] = 0;
+	}
+
+	for (int i = 0; i < n_feeder; i++)
+	{
+		feeder[i][2] = 0;
+	}
 }

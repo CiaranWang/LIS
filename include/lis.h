@@ -21,6 +21,8 @@ using namespace std;
 
 extern double unit_angle;
 extern double motivation_change[3][3];
+void define_feeders(double(&feeder)[n_feeder][3]);
+void define_feeders_detti(double(&feeder)[n_feeder][3]);
 void run_pen(const string& infile, int _PEN_,
 	std::ofstream& asreml_out,
 	bool write_header,

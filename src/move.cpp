@@ -11,45 +11,10 @@
 
 using namespace std;
 
-double feeder[n_feeder][3]{ 0 };
-
 const double norm_factor = 1.0 / 0.477 / std::sqrt(2.0 * pi * sigma_blur);
 const double inv_two_sigma2 = 1.0 / (2.0 * sigma_blur * sigma_blur);
 
-void define_feeders() {
-	
-	if (n_feeder >= 2)
-	{
-		for (int i = 0; i < n_feeder / 2; i++)
-		{
-			feeder[i][0] = 0;
-			feeder[i][1] = i * ly / (n_feeder / 2.0) + ly / n_feeder;
-
-			feeder[i + n_feeder / 2][0] = lx;
-			feeder[i + n_feeder / 2][1] = i * ly / (n_feeder / 2.0) + ly / n_feeder;
-		}
-
-		for (int i = 0; i < n_feeder; i++)
-		{
-			feeder[i][2] = 0;
-		}
-	}
-}
-
-void define_feeders_detti() {
-	for (int i = 0; i < n_feeder; i++)
-	{
-		feeder[i][0] = 0;
-		feeder[i][1] = 0;
-	}
-
-	for (int i = 0; i < n_feeder; i++)
-	{
-		feeder[i][2] = 0;
-	}
-}
-
-int choose_feeder(animal _T_) {
+int choose_feeder(double(&feeder)[n_feeder][3], animal _T_) {
 	double x = _T_.x;
 	double y = _T_.y;
 	int which_feeder = -1;
@@ -70,8 +35,8 @@ int choose_feeder(animal _T_) {
 	return which_feeder;
 }
 
-int select_direction(animal& _T_, std::mt19937& rng) {
-
+int select_direction(animal& _T_, std::mt19937& rng)
+{
 	double accumulate_lower = -_T_.pro_theta[0];
 	double accumulate_upper = 0;
 
@@ -99,9 +64,9 @@ void report_pro_theta(animal _T_) {
 	}
 }
 
-int select_rnd_direction(animal _T_) {
-	int random = (rand() % (n_theta));
-	return random;
+int select_rnd_direction(animal& _T_, std::mt19937& rng) {
+	std::uniform_int_distribution<int> dist(0, n_theta - 1);
+	return dist(rng);
 }
 
 double calc_heatmap_XY(animal t[n_animal], int _I_, double _X_, double _Y_)
@@ -117,7 +82,7 @@ double calc_heatmap_XY(animal t[n_animal], int _I_, double _X_, double _Y_)
 			continue; 
 		}
 
-		r_square = (_X_ - t[_I_].x) * (_X_ - t[_I_].x) + (_Y_ - t[_I_].y) * (_Y_ - t[_I_].y);
+		r_square = (_X_ - t[j].x) * (_X_ - t[j].x) + (_Y_ - t[j].y) * (_Y_ - t[j].y);
 		PDF_j = 1 / (2.0 * pi * sigma_blur * sigma_blur) * exp(- r_square / (2.0 * sigma_blur * sigma_blur));
 
 		density = density + PDF_j;

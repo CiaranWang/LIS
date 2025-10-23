@@ -21,7 +21,7 @@
 namespace fs = std::filesystem;
 using namespace std;
 
-static const std::string PROGRAM_VERSION = "0.2.2";
+static const std::string PROGRAM_VERSION = "0.2.3";
  
 double unit_angle = 2.0 * pi / n_theta; //discrete moving angles
 							    //eat    rest    walk
@@ -141,8 +141,6 @@ int main(int argc, char* argv[])
 
     int nPens = 400;
     
-    define_feeders_detti();
-
     // ---- Run pens in parallel with OpenMP ----
     #pragma omp parallel for schedule(dynamic)
     for (int pen = 1; pen <= nPens; ++pen) 
