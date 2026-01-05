@@ -26,6 +26,8 @@ inline double gaussian1D(double r, double sigma) {
 
 double poissonrand(std::mt19937& rng, double lambda);
 
+double lognormal(std::mt19937& rng, double mu, double sigma, double x);
+
 int binaryrand(std::mt19937& rng, double p);
 
 double logistic(double _X_, double _A_, double _B_);

@@ -184,14 +184,16 @@ void run_pen(const string& infile, int _PEN_,
 					if (interact_or_not_ij == 1)
 					{
 						t[i].n_interact[j]++;
-						double nr_act_i2j = poissonrand(rng, t[i].trait_n) + 1;
+						//double nr_act_i2j = poissonrand(rng, t[i].trait_n) + 1;
+						double nr_act_i2j = ceil(lognormal(rng,0,1, t[i].trait_n));
 						t[i].n_peck[j] = t[i].n_peck[j] + int(nr_act_i2j);
 					}
 
 					if (interact_or_not_ji == 1)
 					{
 						t[j].n_interact[i]++;
-						double nr_act_j2i = poissonrand(rng, t[j].trait_n) + 1;
+						//double nr_act_j2i = poissonrand(rng, t[j].trait_n) + 1;
+						double nr_act_j2i = ceil(lognormal(rng, 0, 1, t[j].trait_n));
 						t[j].n_peck[i] = t[j].n_peck[i] + int(nr_act_j2i);
 					}
 

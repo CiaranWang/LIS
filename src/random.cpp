@@ -34,6 +34,12 @@ double poissonrand(std::mt19937& rng, double lambda)
     return static_cast<double>(dist(rng));
 }
 
+double lognormal(std::mt19937& rng, double mu, double sigma, double x)
+{
+    double y = exp(mu + sigma * x);
+    return y;
+}
+
 int binaryrand(std::mt19937& rng, double p)
 {
     std::bernoulli_distribution d(p);
