@@ -21,6 +21,7 @@ void run_pen(const string& infile, int _PEN_,
 	std::ofstream& asreml_out,
 	bool write_header,
 	int steps,
+	double trait4_sigmaE,
 	std::mt19937& rng)
 {
 	
@@ -185,16 +186,16 @@ void run_pen(const string& infile, int _PEN_,
 					{
 						t[i].n_interact[j]++;
 						//double nr_act_i2j = poissonrand(rng, t[i].trait_n) + 1;
-						double nr_act_i2j = ceil(lognormal(rng, t[i].trait_n, 1, standard_gaussrand(rng)));
-						t[i].n_peck[j] = t[i].n_peck[j] + int(nr_act_i2j);
+						double nr_act_i2j = lognormal(rng, t[i].trait_n, trait4_sigmaE);
+						t[i].n_peck[j] = t[i].n_peck[j] + nr_act_i2j;
 					}
 
 					if (interact_or_not_ji == 1)
 					{
 						t[j].n_interact[i]++;
 						//double nr_act_j2i = poissonrand(rng, t[j].trait_n) + 1;
-						double nr_act_j2i = ceil(lognormal(rng, t[j].trait_n, 1, standard_gaussrand(rng)));
-						t[j].n_peck[i] = t[j].n_peck[i] + int(nr_act_j2i);
+						double nr_act_j2i = lognormal(rng, t[j].trait_n, trait4_sigmaE);
+						t[j].n_peck[i] = t[j].n_peck[i] + nr_act_j2i;
 					}
 
 					/*

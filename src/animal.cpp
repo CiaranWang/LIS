@@ -24,7 +24,7 @@ animal::animal() :
 	}
 
 	for (int i = 0; i < n_animal; ++i) {
-		n_peck[i] = 0;
+		n_peck[i] = 0.0;
 		n_interact[i] = 0;
 		n_meet[i] = 0;
 	}
@@ -72,7 +72,7 @@ void animal::initialize_(std::mt19937& rng) {
 
 	for (int i = 0; i < n_animal; i++)
 	{
-		n_peck[i] = 0;
+		n_peck[i] = 0.0;
 		n_interact[i] = 0;
 		n_meet[i] = 0;
 	}

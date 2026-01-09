@@ -34,9 +34,9 @@ double poissonrand(std::mt19937& rng, double lambda)
     return static_cast<double>(dist(rng));
 }
 
-double lognormal(std::mt19937& rng, double mu, double sigma, double x)
+double lognormal(std::mt19937& rng, double mu, double sigma)
 {
-    double y = exp(mu + sigma * x);
+    double y = exp(mu + sigma * standard_gaussrand(rng));
     return y;
 }
 

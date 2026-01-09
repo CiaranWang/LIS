@@ -21,7 +21,7 @@
 namespace fs = std::filesystem;
 using namespace std;
 
-static const std::string PROGRAM_VERSION = "0.2.5";
+static const std::string PROGRAM_VERSION = "0.3.1";
  
 double unit_angle = 2.0 * pi / n_theta; //discrete moving angles
 							    //eat    rest    walk
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
     fs::path output_file;
     optional<int> seed; // <<< optional seed
     int steps = 120; //default steps 2min
-
+    double trait4_sigmaE = 1.0;
     // ----- Parse command line arguments -----
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
@@ -111,6 +111,9 @@ int main(int argc, char* argv[])
         }
         else if (arg == "--step" && i + 1 < argc) {
             steps = std::stoi(argv[++i]);
+        }
+        else if (arg == "--BiteForceSigmaE" && i + 1 < argc) {
+            trait4_sigmaE = std::stoi(argv[++i]);
         }
         else {
             cerr << "Unknown or incomplete argument: " << arg << "\n";
@@ -166,7 +169,7 @@ int main(int argc, char* argv[])
         }
 
         bool write_header = (pen == 1);
-        run_pen(input_file.string(), pen, per_out, write_header, steps, rng);
+        run_pen(input_file.string(), pen, per_out, write_header, steps, trait4_sigmaE, rng);
         per_out.close();
 
         auto end = high_resolution_clock::now();

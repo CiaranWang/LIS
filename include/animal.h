@@ -37,7 +37,7 @@ public:
 
 	void print_traits() const;
 
-	int n_peck[n_animal];
+	double n_peck[n_animal];
 	int n_interact[n_animal];
 	int n_meet[n_animal];
 

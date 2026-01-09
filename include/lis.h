@@ -27,6 +27,7 @@ void run_pen(const string& infile, int _PEN_,
 	std::ofstream& asreml_out,
 	bool write_header,
 	int steps,
+	double trait4_sigmaE,
 	std::mt19937& rng);
 #endif
 
