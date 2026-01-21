@@ -69,7 +69,7 @@ Options:
 Example:
   ./LIS -i pheno.txt --seed 123456 -o result.txt --step 100 --BiteForceSigmaE 0.37 --BiteForceDist loGNorMaL
 
-Report bugs to: your.email@domain.nl
+Report bugs to: zhuoshi.wang@wur.nl
 )";
 }
 
