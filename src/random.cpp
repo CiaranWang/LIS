@@ -58,6 +58,8 @@ double biteforce(std::mt19937& rng, double mu, double sigma, int type_code)
     {
         return uniformrand(rng, mu - sigma, mu + sigma);
     }
+    // fallback (should never happen)
+    return mu;
 }
 
 int binaryrand(std::mt19937& rng, double p)
