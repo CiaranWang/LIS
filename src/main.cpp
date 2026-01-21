@@ -10,6 +10,8 @@
 #include <omp.h>   // <<< OpenMP
 #include <chrono>
 #include <random>
+#include <algorithm>
+#include <cctype>
 
 #include "random.h"
 #include "animal.h"
@@ -21,7 +23,7 @@
 namespace fs = std::filesystem;
 using namespace std;
 
-static const std::string PROGRAM_VERSION = "0.3.1";
+static const std::string PROGRAM_VERSION = "0.3.2";
  
 double unit_angle = 2.0 * pi / n_theta; //discrete moving angles
 							    //eat    rest    walk
@@ -32,6 +34,43 @@ double motivation_change[3][3]{ -5.0/9,	+1.0/15,	+2.0/45,	    //eat
 
 static void print_version() {
     std::cout << "LIS Version: " << PROGRAM_VERSION << std::endl;
+}
+
+static void print_help() {
+    std::cout <<
+        R"(Usage: ./LIS [OPTIONS]
+
+Simulation of animal interactions in a pen.
+
+Options:
+  -h, -H, --help          Show this help message and exit
+  -u, -U, --update        Automatically update from github and rebuild 
+  -v, -V, --version       Print program version and exit
+  
+  -i [/PATH/TO/INPUT_FILE.txt]    Input phenotype file
+  --seed [N]                      Integer random seed (default: time-based)
+  -o [/PATH/TO/OUTPUT_FILE.txt]   Output result file
+  --step [N]                Number of simulation steps
+  --BiteForceSigmaE [SIGMA] Standard deviation of bite force (positive real number)
+  --BiteForceDist [TYPE] Distribution to tranform bite force trait value to obervation 
+   [TYPE] = Gaussian:  observed bite force is simply drawn from a normal distribution, with 
+                       mean = biter's trait value, sd = BiteForceSigmaE value;
+   [TYPE] = Poisson+1: observed bite force is drawn from a poisson distribution, with 
+                       mean = biter's trait value, then plus one;
+   [TYPE] = lognormal: observed bite force is first drawn from a normal distribution, with 
+                       mean = biter trait value, sd = BiteForceSigmaE value. 
+                       Then natural exponential is taken.
+   [TYPE] = uniform:   observed bite force is simply drawn from uniform distribution, with 
+                       min = biter trait value - BiteForceSigmaE,
+                       max = biter trait value + BiteForceSigmaE;
+   To make life easier,this [TYPE] argument is case insensitive, so POiSSoN+1, gaussIAn are ok.
+
+
+Example:
+  ./LIS -i pheno.txt --seed 123456 -o result.txt --step 100 --BiteForceSigmaE 0.37 --BiteForceDist loGNorMaL
+
+Report bugs to: your.email@domain.nl
+)";
 }
 
 fs::path get_lis_root(char* argv0) {
@@ -74,19 +113,45 @@ static void run_update(char* argv0) {
     std::cout << "You can now run: ./build/LIS [options]\n";
 }
 
+static int get_bfdc(std::string bfdt)
+{
+    // Convert to lowercase
+    std::transform(bfdt.begin(), bfdt.end(), bfdt.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+
+    if (bfdt == "gaussian") {
+        return 0;
+    }
+    else if (bfdt == "poisson+1") {
+        return 1;
+    }
+    else if (bfdt == "lognormal") {
+        return 2;
+    }
+    else if (bfdt == "uniform") {
+        return 3;
+    }
+
+    throw std::invalid_argument("Unknown bfdt: " + bfdt);
+}
+
 int main(int argc, char* argv[])
 {
     // ================================================================
-    // Early check for --version / --update
+    // Early check for --version / --update / --help
     // ================================================================
     if (argc > 1) {
         std::string arg1 = argv[1];
-        if (arg1 == "--version" || arg1 == "-v") {
+        if (arg1 == "--version" || arg1 == "-v" || arg1 == "-V") {
             print_version();
             return 0;
         }
-        if (arg1 == "--update" || arg1 == "-u") {
+        if (arg1 == "--update" || arg1 == "-u" || arg1 == "-U") {
             run_update(argv[0]);
+            return 0;
+        }
+        if (arg1 == "--help" || arg1 == "-h" || arg1 == "-H") {
+            print_help();
             return 0;
         }
     }
@@ -97,6 +162,7 @@ int main(int argc, char* argv[])
     optional<int> seed; // <<< optional seed
     int steps = 120; //default steps 2min
     double trait4_sigmaE = 1.0;
+    int bfdc = 2;
     // ----- Parse command line arguments -----
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
@@ -113,7 +179,10 @@ int main(int argc, char* argv[])
             steps = std::stoi(argv[++i]);
         }
         else if (arg == "--BiteForceSigmaE" && i + 1 < argc) {
-            trait4_sigmaE = std::stoi(argv[++i]);
+            trait4_sigmaE = std::stod(argv[++i]);
+        }
+        else if (arg == "--BiteForceDist" && i + 1 < argc) {
+            bfdc = get_bfdc(argv[++i]);
         }
         else {
             cerr << "Unknown or incomplete argument: " << arg << "\n";
@@ -169,7 +238,7 @@ int main(int argc, char* argv[])
         }
 
         bool write_header = (pen == 1);
-        run_pen(input_file.string(), pen, per_out, write_header, steps, trait4_sigmaE, rng);
+        run_pen(input_file.string(), pen, per_out, write_header, steps, trait4_sigmaE, bfdc, rng);
         per_out.close();
 
         auto end = high_resolution_clock::now();

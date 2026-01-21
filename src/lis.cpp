@@ -22,6 +22,7 @@ void run_pen(const string& infile, int _PEN_,
 	bool write_header,
 	int steps,
 	double trait4_sigmaE,
+	int bfdc,
 	std::mt19937& rng)
 {
 	
@@ -186,7 +187,7 @@ void run_pen(const string& infile, int _PEN_,
 					{
 						t[i].n_interact[j]++;
 						//double nr_act_i2j = poissonrand(rng, t[i].trait_n) + 1;
-						double nr_act_i2j = lognormal(rng, t[i].trait_n, trait4_sigmaE);
+						double nr_act_i2j = biteforce(rng, t[i].trait_n, trait4_sigmaE, bfdc);
 						t[i].n_peck[j] = t[i].n_peck[j] + nr_act_i2j;
 					}
 
@@ -194,7 +195,7 @@ void run_pen(const string& infile, int _PEN_,
 					{
 						t[j].n_interact[i]++;
 						//double nr_act_j2i = poissonrand(rng, t[j].trait_n) + 1;
-						double nr_act_j2i = lognormal(rng, t[j].trait_n, trait4_sigmaE);
+						double nr_act_j2i = biteforce(rng, t[j].trait_n, trait4_sigmaE, bfdc);
 						t[j].n_peck[i] = t[j].n_peck[i] + nr_act_j2i;
 					}
 

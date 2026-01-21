@@ -40,6 +40,26 @@ double lognormal(std::mt19937& rng, double mu, double sigma)
     return y;
 }
 
+double biteforce(std::mt19937& rng, double mu, double sigma, int type_code)
+{
+    if (type_code == 0)
+    {
+        return gaussrand(rng, mu, sigma);
+    }
+    else if (type_code == 1)
+    {
+        return poissonrand(rng, mu) + 1;
+    }
+    else if (type_code == 2)
+    {
+        return lognormal(rng, mu, sigma);
+    }
+    else if (type_code == 3)
+    {
+        return uniformrand(rng, mu - sigma, mu + sigma);
+    }
+}
+
 int binaryrand(std::mt19937& rng, double p)
 {
     std::bernoulli_distribution d(p);

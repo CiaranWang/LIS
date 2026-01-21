@@ -12,6 +12,8 @@ double standard_gaussrand(std::mt19937& rng);
 
 double gaussrand(std::mt19937& rng, double mu, double sigma);
 
+double biteforce(std::mt19937& rng, double mu, double sigma, int type);
+
 // 2D Gaussian: used for density computation
 inline double gaussian2D(double r2, double sigma) {
     const double norm = 1.0 / (2.0 * pi * sigma * sigma);
