@@ -52,7 +52,7 @@ Options:
   -o [/PATH/TO/OUTPUT_FILE.txt]   Output result file
   --step [N]                Number of simulation steps
   --BiteForceSigmaE [SIGMA] Standard deviation of bite force (positive real number)
-  --BiteForceDist [TYPE] Distribution to tranform bite force trait value to obervation 
+  --BiteForceDist [TYPE] Distribution to transform bite force trait value to observation 
    [TYPE] = Gaussian:  observed bite force is simply drawn from a normal distribution, with 
                        mean = biter's trait value, sd = BiteForceSigmaE value;
    [TYPE] = Poisson+1: observed bite force is drawn from a poisson distribution, with 
@@ -63,7 +63,7 @@ Options:
    [TYPE] = uniform:   observed bite force is simply drawn from uniform distribution, with 
                        min = biter trait value - BiteForceSigmaE,
                        max = biter trait value + BiteForceSigmaE;
-   To make life easier,this [TYPE] argument is case insensitive, so POiSSoN+1, gaussIAn are ok.
+   To make life easier, this [TYPE] argument is case insensitive, so POiSSoN+1, gaussIAn are ok.
 
 
 Example:
