@@ -19,11 +19,12 @@
 #include "population.h"
 #include "act.h"
 #include "lis.h"
+#include "helptext.h"
 
 namespace fs = std::filesystem;
 using namespace std;
 
-static const std::string PROGRAM_VERSION = "0.3.3";
+static const std::string PROGRAM_VERSION = "0.3.4";
  
 double unit_angle = 2.0 * pi / n_theta; //discrete moving angles
 							    //eat    rest    walk
@@ -37,40 +38,7 @@ static void print_version() {
 }
 
 static void print_help() {
-    std::cout <<
-        R"(Usage: ./LIS [OPTIONS]
-
-Simulation of animal interactions in a pen.
-
-Options:
-  -h, -H, --help          Show this help message and exit
-  -u, -U, --update        Automatically update from github and rebuild 
-  -v, -V, --version       Print program version and exit
-  
-  -i [/PATH/TO/INPUT_FILE.txt]    Input phenotype file
-  --seed [N]                      Integer random seed (default: time-based)
-  -o [/PATH/TO/OUTPUT_FILE.txt]   Output result file
-  --step [N]                Number of simulation steps
-  --BiteForceSigmaE [SIGMA] Standard deviation of bite force (positive real number)
-  --BiteForceDist [TYPE] Distribution to transform bite force trait value to observation 
-   [TYPE] = Gaussian:  observed bite force is simply drawn from a normal distribution, with 
-                       mean = biter's trait value, sd = BiteForceSigmaE value;
-   [TYPE] = Poisson+1: observed bite force is drawn from a poisson distribution, with 
-                       mean = biter's trait value, then plus one;
-   [TYPE] = lognormal: observed bite force is first drawn from a normal distribution, with 
-                       mean = biter trait value, sd = BiteForceSigmaE value. 
-                       Then natural exponential is taken.
-   [TYPE] = uniform:   observed bite force is simply drawn from uniform distribution, with 
-                       min = biter trait value - BiteForceSigmaE,
-                       max = biter trait value + BiteForceSigmaE;
-   To make life easier, this [TYPE] argument is case insensitive, so POiSSoN+1, gaussIAn are ok.
-
-
-Example:
-  ./LIS -i pheno.txt --seed 123456 -o result.txt --step 100 --BiteForceSigmaE 0.37 --BiteForceDist loGNorMaL
-
-Report bugs to: zhuoshi.wang@wur.nl
-)";
+    std::cout << LIS_HELP_TEXT << std::endl;
 }
 
 fs::path get_lis_root(char* argv0) {
@@ -119,7 +87,7 @@ static int get_bfdc(std::string bfdt)
     std::transform(bfdt.begin(), bfdt.end(), bfdt.begin(),
         [](unsigned char c) { return std::tolower(c); });
 
-    if (bfdt == "gaussian") {
+    if (bfdt == "gaussian" || bfdt == "normal") {
         return 0;
     }
     else if (bfdt == "poisson+1") {
