@@ -18,7 +18,7 @@ double uniformrand(std::mt19937& rng, double min, double max)
 double standard_gaussrand(std::mt19937& rng)
 {
     // Use std normal distribution (Box-Muller internal by lib)
-    static thread_local std::normal_distribution<double> norm(0.0, 1.0);
+    std::normal_distribution<double> norm(0.0, 1.0);
     return norm(rng);
 }
 
