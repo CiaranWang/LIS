@@ -2,6 +2,7 @@
 #define _ANIMAL_H_
 
 #include "lis.h"
+#include <vector>
 
 class animal {
 public:
@@ -37,11 +38,11 @@ public:
 
 	void print_traits() const;
 
-	double n_peck[n_animal];
-	int n_interact[n_animal];
-	int n_meet[n_animal];
+	std::vector<double> n_peck;
+	std::vector<int> n_interact;
+	std::vector<int> n_meet;
 
-	void initialize_(std::mt19937& rng);
+	void initialize_(std::mt19937& rng, int animal_count);
 	void behave_();
 	void move_(double _D_, double _THETA_);
 	void update_motivation_(int _CODE_);
@@ -60,7 +61,7 @@ public:
 
 double d_sqr(animal _T1_, animal _T2_);
 double distance(animal _T1_, animal _T2_);
-void alter_prob_density(animal t[n_animal], int _I_);
-void alter_prob_density_trait_s(animal t[n_animal], int _I_);
+void alter_prob_density(std::vector<animal>& t, int _I_);
+void alter_prob_density_trait_s(std::vector<animal>& t, int _I_);
 
 #endif

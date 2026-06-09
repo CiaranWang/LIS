@@ -12,6 +12,8 @@
 #include <random>
 #include <algorithm>
 #include <cctype>
+#include <vector>
+#include <stdexcept>
 
 #include "random.h"
 #include "animal.h"
@@ -24,7 +26,7 @@
 namespace fs = std::filesystem;
 using namespace std;
 
-static const std::string PROGRAM_VERSION = "0.3.5";
+static const std::string PROGRAM_VERSION = "0.5.0r";
  
 double unit_angle = 2.0 * pi / n_theta; //discrete moving angles
 							    //eat    rest    walk
@@ -32,6 +34,117 @@ double unit_angle = 2.0 * pi / n_theta; //discrete moving angles
 double motivation_change[3][3]{ -5.0/9,	+1.0/15,	+2.0/45,	    //eat
 								   0.0,	-5.0/9 , 	+5.0/24,	    //rest
 								   0.0,	+5.0/9 ,	-5.0/24};	    //walk
+
+static std::string trim(std::string value)
+{
+    const char* whitespace = " \t\r\n";
+    const size_t first = value.find_first_not_of(whitespace);
+    if (first == std::string::npos) {
+        return "";
+    }
+    const size_t last = value.find_last_not_of(whitespace);
+    return value.substr(first, last - first + 1);
+}
+
+static std::string normalize_key(std::string key)
+{
+    key = trim(key);
+    std::transform(key.begin(), key.end(), key.begin(),
+        [](unsigned char c) {
+            if (c == ' ' || c == '-' || c == '.') {
+                return '_';
+            }
+            return static_cast<char>(std::tolower(c));
+        });
+    return key;
+}
+
+static double parse_number_or_fraction(const std::string& token)
+{
+    const size_t slash_pos = token.find('/');
+    if (slash_pos == std::string::npos) {
+        return std::stod(token);
+    }
+
+    const double numerator = std::stod(token.substr(0, slash_pos));
+    const double denominator = std::stod(token.substr(slash_pos + 1));
+    if (denominator == 0.0) {
+        throw std::runtime_error("Division by zero in motivation_rate value: " + token);
+    }
+    return numerator / denominator;
+}
+
+static std::vector<double> parse_number_list(std::string value)
+{
+    for (char& c : value) {
+        if (c == ',' || c == ';') {
+            c = ' ';
+        }
+    }
+
+    std::vector<double> values;
+    std::istringstream iss(value);
+    std::string token;
+    while (iss >> token) {
+        values.push_back(parse_number_or_fraction(token));
+    }
+    return values;
+}
+
+static void load_parameters(const fs::path& parameter_file)
+{
+    std::ifstream input(parameter_file);
+    if (!input) {
+        throw std::runtime_error("Could not open parameter file: " + parameter_file.string());
+    }
+
+    std::string line;
+    int line_number = 0;
+    bool found_motivation_rate = false;
+
+    while (std::getline(input, line)) {
+        line_number++;
+
+        const size_t comment_pos = line.find('#');
+        if (comment_pos != std::string::npos) {
+            line = line.substr(0, comment_pos);
+        }
+
+        line = trim(line);
+        if (line.empty() || (line.front() == '[' && line.back() == ']')) {
+            continue;
+        }
+
+        const size_t equals_pos = line.find('=');
+        if (equals_pos == std::string::npos) {
+            continue;
+        }
+
+        const std::string key = normalize_key(line.substr(0, equals_pos));
+        const std::string value = trim(line.substr(equals_pos + 1));
+
+        if (key == "motivation_rate") {
+            const std::vector<double> values = parse_number_list(value);
+            if (values.size() != 9) {
+                throw std::runtime_error(
+                    "motivation_rate must contain exactly 9 values at " +
+                    parameter_file.string() + ":" + std::to_string(line_number));
+            }
+
+            int index = 0;
+            for (int row = 0; row < 3; row++) {
+                for (int col = 0; col < 3; col++) {
+                    motivation_change[row][col] = values[index++];
+                }
+            }
+            found_motivation_rate = true;
+        }
+    }
+
+    if (!found_motivation_rate) {
+        throw std::runtime_error("Missing motivation_rate key in parameter file: " + parameter_file.string());
+    }
+}
 
 static void print_version() {
     std::cout << "LIS Version: " << PROGRAM_VERSION << std::endl;
@@ -127,6 +240,7 @@ int main(int argc, char* argv[])
 
     fs::path input_file;
     fs::path output_file;
+    fs::path parameter_file = "parameter.ini";
     optional<int> seed; // <<< optional seed
     int steps = 120; //default steps 2min
     double trait4_sigmaE = 1.0;
@@ -142,6 +256,9 @@ int main(int argc, char* argv[])
         }
         else if (arg == "-o" && i + 1 < argc) {
             output_file = argv[++i];
+        }
+        else if ((arg == "-p" || arg == "--param" || arg == "--parameter") && i + 1 < argc) {
+            parameter_file = argv[++i];
         }
         else if (arg == "--step" && i + 1 < argc) {
             steps = std::stoi(argv[++i]);
@@ -163,14 +280,39 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    try {
+        load_parameters(parameter_file);
+    }
+    catch (const std::exception& e) {
+        cerr << "Error: " << e.what() << "\n";
+        return 1;
+    }
+
+    std::vector<PenPopulation> pens;
+    try {
+        pens = read_population(input_file.string());
+    }
+    catch (const std::exception& e) {
+        cerr << "Error: " << e.what() << "\n";
+        return 1;
+    }
+
     // ----- Set default output path if not provided -----
     if (output_file.empty()) {
         output_file = input_file.parent_path() / ("output_" + input_file.filename().string());
     }
 
     cout << "Input file:  " << input_file << "\n";
+    cout << "Parameter file: " << parameter_file << "\n";
     cout << "Output file: " << output_file << "\n";
     cout << "Steps:       " << steps << "\n";
+    cout << "Pens:        " << pens.size() << "\n";
+
+    int total_animals = 0;
+    for (const PenPopulation& pen_data : pens) {
+        total_animals += static_cast<int>(pen_data.animals.size());
+    }
+    cout << "Animals:     " << total_animals << "\n";
 
     if (seed.has_value()) {
         cout << "Seed:        " << seed.value() << " (using deterministic per-thread RNG)\n";
@@ -179,12 +321,12 @@ int main(int argc, char* argv[])
         cout << "Seed:        (not provided, using time-based RNG per thread)\n";
     }
 
-    int nPens = 400;
-    
     // ---- Run pens in parallel with OpenMP ----
     #pragma omp parallel for schedule(dynamic)
-    for (int pen = 1; pen <= nPens; ++pen) 
+    for (int pen_index = 0; pen_index < static_cast<int>(pens.size()); ++pen_index)
     {
+        const PenPopulation& pen_data = pens[pen_index];
+        const int pen = pen_data.pen;
         using namespace std::chrono;
         auto start = high_resolution_clock::now();
 
@@ -205,8 +347,8 @@ int main(int argc, char* argv[])
             continue;
         }
 
-        bool write_header = (pen == 1);
-        run_pen(input_file.string(), pen, per_out, write_header, steps, trait4_sigmaE, bfdc, rng);
+        bool write_header = (pen_index == 0);
+        run_pen(pen_data.animals, pen, per_out, write_header, steps, trait4_sigmaE, bfdc, rng);
         per_out.close();
 
         auto end = high_resolution_clock::now();
@@ -225,8 +367,9 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    for (int pen = 1; pen <= nPens; ++pen) 
+    for (const PenPopulation& pen_data : pens)
     {
+        const int pen = pen_data.pen;
         fs::path perfile = output_file;
         std::ostringstream oss;
         oss << output_file.stem().string() << "_pen" << pen << output_file.extension().string();

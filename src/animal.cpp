@@ -23,12 +23,6 @@ animal::animal() :
 		threshold[i] = 100.0;
 	}
 
-	for (int i = 0; i < n_animal; ++i) {
-		n_peck[i] = 0.0;
-		n_interact[i] = 0;
-		n_meet[i] = 0;
-	}
-
 	pro_theta[0] = 1.0;
 	for (int i = 1; i < n_theta; ++i) {
 		pro_theta[i] = 0.0;
@@ -56,7 +50,7 @@ void animal::set_angle_(double _ALPHA_) {
 	angle = _ALPHA_;
 }
 
-void animal::initialize_(std::mt19937& rng) {
+void animal::initialize_(std::mt19937& rng, int animal_count) {
 	x = uniformrand(rng, 0, lx);
 	y = uniformrand(rng, 0, ly);
 	new_x = x;
@@ -70,12 +64,9 @@ void animal::initialize_(std::mt19937& rng) {
 		pro_theta[i] = double(1) / n_theta;
 	}
 
-	for (int i = 0; i < n_animal; i++)
-	{
-		n_peck[i] = 0.0;
-		n_interact[i] = 0;
-		n_meet[i] = 0;
-	}
+	n_peck.assign(animal_count, 0.0);
+	n_interact.assign(animal_count, 0);
+	n_meet.assign(animal_count, 0);
 
 	//generate random starting status
 	motivation[0] = uniformrand(rng, 0.0, 100.0); // code 0
@@ -87,12 +78,6 @@ void animal::initialize_(std::mt19937& rng) {
 	threshold[2] = 100.0; // code 2
 
 	behavior_code = 1;
-
-	trait_p = 0.0;
-	trait_r = 0.0;
-	trait_s = 0.0;
-	trait_n = 0.0;
-	
 }
 
 void animal::behave_() {
@@ -160,7 +145,7 @@ void animal::alter_prob_uniform() {
 	}
 }
 
-void alter_prob_density(animal t[n_animal], int _I_) 
+void alter_prob_density(std::vector<animal>& t, int _I_)
 {
 	for (int i = 0; i < n_theta; i++)
 	{
@@ -170,7 +155,7 @@ void alter_prob_density(animal t[n_animal], int _I_)
 	t[_I_].normalize_prob();
 }
 
-void alter_prob_density_trait_s(animal t[n_animal], int _I_)
+void alter_prob_density_trait_s(std::vector<animal>& t, int _I_)
 {
 	alter_prob_density(t, _I_);
 	double factor = logistic(t[_I_].trait_s, -1, 0) * 2 - 1;

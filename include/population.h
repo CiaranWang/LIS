@@ -15,6 +15,11 @@
 
 using namespace std;
 
-void read_pheno(animal t[n_animal], const std::string& _INFILE_, int _PEN_);
+struct PenPopulation {
+	int pen = 0;
+	std::vector<animal> animals;
+};
+
+std::vector<PenPopulation> read_population(const std::string& infile);
 
 #endif

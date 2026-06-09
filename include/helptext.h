@@ -10,6 +10,7 @@ Options:
   -v, -V, --version       Print program version and exit
   
   -i [/PATH/TO/INPUT_FILE.txt]    Input phenotype file
+  -p [/PATH/TO/parameter.ini]     Parameter file (default: parameter.ini)
   --seed [N]                      Integer random seed (default: time-based)
   -o [/PATH/TO/OUTPUT_FILE.txt]   Output result file
   --step [N]                Number of simulation steps
@@ -30,7 +31,7 @@ Options:
 
 
 Example:
-  ./LIS -i pheno.txt --seed 123456 -o result.txt --step 100 --BiteForceSigmaE 0.37 --BiteForceDist loGNorMaL
+  ./LIS -i pheno.txt -p parameter.ini --seed 123456 -o result.txt --step 100 --BiteForceSigmaE 0.37 --BiteForceDist loGNorMaL
 
 Report bugs to: zhuoshi.wang@wur.nl
 )";

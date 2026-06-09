@@ -28,6 +28,7 @@ At each simulation step, animals update behaviour, move through the pen, respond
 |-- LICENSE.txt             MIT license
 |-- README.md               Project documentation
 |-- input_example.txt       Example phenotype input file
+|-- parameter.ini           Default model parameter file
 |-- lis_test.sh             Example SLURM job script
 |-- include/                Header files
 |-- src/                    C++ source files
@@ -63,7 +64,7 @@ The executable is named `LIS`.
 ## Usage
 
 ```bash
-./LIS -i input_example.txt --seed 123456 -o result.txt --step 100 --BiteForceSigmaE 0.37 --BiteForceDist lognormal
+./LIS -i input_example.txt -p parameter.ini --seed 123456 -o result.txt --step 100 --BiteForceSigmaE 0.37 --BiteForceDist lognormal
 ```
 
 Options:
@@ -74,6 +75,7 @@ Options:
 -u, -U, --update                  Update from GitHub and rebuild
 
 -i PATH                           Input phenotype file
+-p PATH, --param PATH             Parameter file, default: parameter.ini
 -o PATH                           Output result file
 --seed N                          Integer random seed
 --step N                          Number of simulation steps
@@ -99,14 +101,25 @@ ID Pen Trait_1 Trait_2 Trait_3 Trait_4
 F1578_4 1 -0.688262526564818 1.57855113181651 0.903732845244942 -2.32434185156005
 ```
 
-Current assumptions in the code:
+The program scans this file before running the simulation and automatically determines:
 
-- 14 animals per pen
-- 400 pens
-- pen numbers start at 1
-- animals for each pen are stored in contiguous blocks of 14 rows
+- the total number of animals
+- the number of pens
+- the animals belonging to each pen
 
-These values are currently compiled into the program rather than read from a configuration file.
+Pens may contain different numbers of animals. The input does not need to contain exactly 14 animals per pen, and the simulation no longer assumes exactly 400 pens.
+
+## Parameter File
+
+By default, LIS reads model parameters from `parameter.ini`. A different file can be provided with `-p`, `--param`, or `--parameter`.
+
+The motivation-rate matrix is read from the `motivation_rate` key:
+
+```ini
+motivation_rate = -5/9, 1/15, 2/45; 0, -5/9, 5/24; 0, 5/9, -5/24
+```
+
+The matrix contains 9 values. Rows are the motivations being updated: eat, rest, and walk. Columns are the behaviour performed in the current step: eat, rest, and walk. Values may be decimals or simple fractions.
 
 ## Output Format
 
@@ -142,7 +155,6 @@ This makes repeated runs reproducible for the same executable, input file, model
 Several core model settings are currently defined in `include/lis.h`, including:
 
 - pen dimensions
-- number of animals
 - number of feeders
 - feeder size
 - animal body size
@@ -151,14 +163,14 @@ Several core model settings are currently defined in `include/lis.h`, including:
 - movement direction discretisation
 - density blur parameter
 
-For broader academic use, these should eventually move into a documented configuration file or command-line options.
+The motivation-rate matrix is already read from `parameter.ini`. For broader academic use, the remaining compiled constants should eventually move into the same parameter file or command-line options.
 
 ## Example SLURM Run
 
 The `lis_test.sh` file gives an example cluster job:
 
 ```bash
-srun -c 16 ~/LIS/build/LIS -i ./input_example.txt --seed 123456 --step 1000 -o test_output.txt
+srun -c 16 ~/LIS/build/LIS -i ./input_example.txt -p ./parameter.ini --seed 123456 --step 1000 -o test_output.txt
 ```
 
 Adjust paths, CPU count, memory, and wall time for your local cluster environment.
@@ -169,7 +181,6 @@ This project is close to being usable as public academic software, but the follo
 
 - replace the placeholder copyright fields in `LICENSE.txt`
 - document the biological interpretation and units of all model parameters
-- move hard-coded experiment settings into a configuration interface
 - add automated tests for input parsing, random-number reproducibility, and key probability functions
 - add a small input file for quick smoke tests
 - document expected output for the example input

@@ -2,8 +2,10 @@
 #define _LIS_H_
 #include <iostream>
 #include <filesystem>  // C++17
+#include <fstream>
 #include <string>
 #include <random>
+#include <vector>
 
 using namespace std;
 
@@ -11,7 +13,6 @@ using namespace std;
 #define lx ((double)450)        //length of the pen (in cm)
 #define ly ((double)350)        //width of the pen (in cm)
 #define n_theta ((int)8)         //nr directions that animals are allowed to move
-#define n_animal ((int)14)      //nr of animals
 #define n_feeder ((int)1)       //nr of feeders
 #define feedersize ((int)40)     //feeder size (in cm)
 #define bodysize ((double)40)    //the diamater of the animal
@@ -21,9 +22,12 @@ using namespace std;
 
 extern double unit_angle;
 extern double motivation_change[3][3];
+class animal;
+
 void define_feeders(double(&feeder)[n_feeder][3]);
 void define_feeders_detti(double(&feeder)[n_feeder][3]);
-void run_pen(const string& infile, int _PEN_,
+void run_pen(const std::vector<animal>& pen_animals,
+	int _PEN_,
 	std::ofstream& asreml_out,
 	bool write_header,
 	int steps,

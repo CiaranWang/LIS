@@ -17,7 +17,8 @@
 namespace fs = std::filesystem;
 using namespace std;
 
-void run_pen(const string& infile, int _PEN_,
+void run_pen(const std::vector<animal>& pen_animals,
+	int _PEN_,
 	std::ofstream& asreml_out,
 	bool write_header,
 	int steps,
@@ -37,17 +38,17 @@ void run_pen(const string& infile, int _PEN_,
 	video_name = outpath + "\\Turkeymotion_Video.mp4";
 	VideoWriter video(video_name, VideoWriter::fourcc('P', 'I', 'M', '1'), 15.0, Size(1000, 1000), 1);*/
 
-	animal t[n_animal];
-	for (int i = 0; i < n_animal; i++)
+	std::vector<animal> t = pen_animals;
+	const int animal_count = static_cast<int>(t.size());
+
+	for (int i = 0; i < animal_count; i++)
 	{
-		t[i].initialize_(rng); // initialize the status of the turkey
+		t[i].initialize_(rng, animal_count); // initialize the status of the animal
 		//report_pro_theta(t[i]);
 	}
 
 	double feeder[n_feeder][3]{ 0 };
 	define_feeders_detti(feeder);
-
-	read_pheno(t, infile, _PEN_); // created in R
 	//std::cout << "Pen " << _PEN_ << ": feeder set up, motivation initialized, phenotypes read\n";
 	
 	int step = 0;
@@ -56,7 +57,7 @@ void run_pen(const string& infile, int _PEN_,
 	while (step < steps) //12 hours
 	{
 		// behave eat rest walk
-		for (int i = 0; i < n_animal; i++)
+		for (int i = 0; i < animal_count; i++)
 		{
 			t[i].behave_(); // choose behaviour using current motivations
 
@@ -68,7 +69,7 @@ void run_pen(const string& infile, int _PEN_,
 				{
 					t[i].alter_prob_uniform(); // no feeder then walk around, all angles have equal probability
 					//report_pro_theta(t[i]);
-					for (int j = 0; j < n_animal; j++)
+					for (int j = 0; j < animal_count; j++)
 					{
 						if (j != i)
 						{// distance btw turkeys
@@ -105,7 +106,7 @@ void run_pen(const string& infile, int _PEN_,
 						//t[i].alter_prob_uniform();
 						//report_pro_theta(t[i]);
 
-						for (int j = 0; j < n_animal; j++)
+						for (int j = 0; j < animal_count; j++)
 						{
 							if (j != i)
 							{
@@ -132,7 +133,7 @@ void run_pen(const string& infile, int _PEN_,
 			{
 				alter_prob_density_trait_s(t, i);
 				//report_pro_theta(t[i]);
-				for (int j = 0; j < n_animal; j++)
+				for (int j = 0; j < animal_count; j++)
 				{
 					if (j != i)
 					{
@@ -163,13 +164,13 @@ void run_pen(const string& infile, int _PEN_,
 				*/
 		}
 
-		for (int i = 0; i < n_animal; i++)
+		for (int i = 0; i < animal_count; i++)
 		{
 			t[i].update_position_();
 		}
 		
 		//behave interaction
-		for (int i = 0; i < n_animal; i++)
+		for (int i = 0; i < animal_count; i++)
 		{
 			for (int j = 0; j < i; j++)
 			{
@@ -235,7 +236,7 @@ void run_pen(const string& infile, int _PEN_,
 
 		//total_meet = 0; // alternatively one could stop at X pecks
 		//compute total numbers of meets
-		/*for (int i = 0; i < n_animal; i++)
+		/*for (int i = 0; i < animal_count; i++)
 		{
 			for (int j = 0; j < i; j++)
 			{
@@ -244,9 +245,9 @@ void run_pen(const string& infile, int _PEN_,
 		}*/
 	}
 
-	for (int i = 0; i < n_animal; i++)
+	for (int i = 0; i < animal_count; i++)
 	{
-		for (int j = 0; j < n_animal; j++)
+		for (int j = 0; j < animal_count; j++)
 		{
 			if (j == i) continue; //skip self
 
