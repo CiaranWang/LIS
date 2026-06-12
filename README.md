@@ -202,7 +202,10 @@ Several core model settings are read from `parameter.ini`, including pen dimensi
 The `lis_test.sh` file gives an example cluster job:
 
 ```bash
-~/LIS/build/LIS --input ./input_example.txt --param ./parameter.ini --seed 123456 --steps 1000 --output test_output.txt
+rm -rf lis_test/
+mkdir -p lis_test
+
+./build/LIS --input ./input_example.txt --param ./parameter.ini --seed 123456 --steps 100 --output lis_test/test_output.txt
 ```
 
 Adjust paths, CPU count, memory, and wall time for your local cluster environment.
