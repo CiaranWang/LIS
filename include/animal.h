@@ -28,7 +28,7 @@ public:
 
 	int behavior_code; // 0 = eat, 1 = rest, 2 = walk
 
-	double pro_theta[n_theta];
+	std::vector<double> pro_theta;
 
 	//phenotype of traits:
 	double trait_p; //ppppperformer effect

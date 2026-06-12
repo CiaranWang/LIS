@@ -11,16 +11,13 @@
 
 using namespace std;
 
-const double norm_factor = 1.0 / 0.477 / std::sqrt(2.0 * pi * sigma_blur);
-const double inv_two_sigma2 = 1.0 / (2.0 * sigma_blur * sigma_blur);
-
-int choose_feeder(double(&feeder)[n_feeder][3], animal _T_) {
+int choose_feeder(const std::vector<std::array<double, 3>>& feeder, animal _T_) {
 	double x = _T_.x;
 	double y = _T_.y;
 	int which_feeder = -1;
 	double min_d_sqr = lx * lx + ly * ly;
 	double d_sqr = 0;
-	for (int i = 0; i < n_feeder; i++)
+	for (int i = 0; i < static_cast<int>(feeder.size()); i++)
 	{
 		if (feeder[i][2] == 0)
 		{
@@ -115,6 +112,8 @@ double calc_weighed_density_orientation(const std::vector<animal>& t, int _I_, d
 	double integral = 0.0;
 	const int iteration = 500;
 	const double delta_r = 2.0 * sigma_blur / iteration;
+	const double norm_factor = 1.0 / 0.477 / std::sqrt(2.0 * pi * sigma_blur);
+	const double inv_two_sigma2 = 1.0 / (2.0 * sigma_blur * sigma_blur);
 
 	for (int k = 0; k < iteration; k++)
 	{

@@ -11,4 +11,4 @@
 mkdir ./lis_test/
 cd ./lis_test/
 
-srun -c 16 ~/LIS/build/LIS -i ./input_example.txt --seed 123456 --step 1000 -o test_output.txt
+~/LIS/build/LIS --input ./input_example.txt --param ./parameter.ini --seed 123456 --steps 1000 --output test_output.txt

@@ -3,10 +3,11 @@
 
 #include <random>
 #include <vector>
+#include <array>
 #include "lis.h"
 #include "animal.h"
 
-int choose_feeder(double(&feeder)[n_feeder][3], animal _T_);
+int choose_feeder(const std::vector<std::array<double, 3>>& feeder, animal _T_);
 
 int select_direction(animal& _T_, std::mt19937& rng);
 

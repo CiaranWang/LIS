@@ -14,6 +14,7 @@
 #include <cctype>
 #include <vector>
 #include <stdexcept>
+#include <array>
 
 #include "random.h"
 #include "animal.h"
@@ -26,8 +27,17 @@
 namespace fs = std::filesystem;
 using namespace std;
 
-static const std::string PROGRAM_VERSION = "0.5.0r";
+static const std::string PROGRAM_VERSION = "0.6.r";
  
+double lx = 450.0;
+double ly = 350.0;
+int n_theta = 8;
+int n_feeder = 1;
+double bodysize = 40.0;
+double stepsize = 40.0;
+double sensingrange = 40.0;
+double sigma_blur = 60.0;
+std::vector<std::array<double, 2>> feeder_coordinates;
 double unit_angle = 2.0 * pi / n_theta; //discrete moving angles
 							    //eat    rest    walk
 
@@ -69,7 +79,7 @@ static double parse_number_or_fraction(const std::string& token)
     const double numerator = std::stod(token.substr(0, slash_pos));
     const double denominator = std::stod(token.substr(slash_pos + 1));
     if (denominator == 0.0) {
-        throw std::runtime_error("Division by zero in motivation_rate value: " + token);
+        throw std::runtime_error("Division by zero in parameter value: " + token);
     }
     return numerator / denominator;
 }
@@ -91,6 +101,60 @@ static std::vector<double> parse_number_list(std::string value)
     return values;
 }
 
+static int parse_positive_int_parameter(const std::string& key, const std::string& value)
+{
+    const double parsed = parse_number_or_fraction(value);
+    const int as_int = static_cast<int>(parsed);
+    if (parsed != as_int || as_int <= 0) {
+        throw std::runtime_error(key + " must be a positive integer");
+    }
+    return as_int;
+}
+
+static double parse_positive_double_parameter(const std::string& key, const std::string& value)
+{
+    const double parsed = parse_number_or_fraction(value);
+    if (parsed <= 0.0) {
+        throw std::runtime_error(key + " must be positive");
+    }
+    return parsed;
+}
+
+static std::vector<std::array<double, 2>> parse_feeder_coordinates(const std::string& value)
+{
+    const std::vector<double> values = parse_number_list(value);
+    if (values.empty() || values.size() % 2 != 0) {
+        throw std::runtime_error("feeder_coordinates must contain x,y pairs");
+    }
+
+    std::vector<std::array<double, 2>> coordinates;
+    coordinates.reserve(values.size() / 2);
+    for (size_t i = 0; i < values.size(); i += 2) {
+        coordinates.push_back({ values[i], values[i + 1] });
+    }
+    return coordinates;
+}
+
+static void validate_feeder_coordinates()
+{
+    if (static_cast<int>(feeder_coordinates.size()) != n_feeder) {
+        throw std::runtime_error(
+            "feeder_coordinates must contain exactly " +
+            std::to_string(n_feeder) + " x,y pairs");
+    }
+
+    for (int i = 0; i < static_cast<int>(feeder_coordinates.size()); i++) {
+        const double x = feeder_coordinates[i][0];
+        const double y = feeder_coordinates[i][1];
+        if (!(x >= 0.0 && x <= lx && y >= 0.0 && y <= ly)) {
+            throw std::runtime_error(
+                "Feeder " + std::to_string(i + 1) +
+                " is not in the pen area: x=" + std::to_string(x) +
+                ", y=" + std::to_string(y));
+        }
+    }
+}
+
 static void load_parameters(const fs::path& parameter_file)
 {
     std::ifstream input(parameter_file);
@@ -99,8 +163,68 @@ static void load_parameters(const fs::path& parameter_file)
     }
 
     std::string line;
+    std::string pending_key;
+    std::string pending_value;
+    int pending_line_number = 0;
     int line_number = 0;
     bool found_motivation_rate = false;
+    bool found_feeder_coordinates = false;
+
+    auto process_parameter = [&](const std::string& key, const std::string& value, int key_line_number) {
+        if (key == "motivation_rate") {
+            const std::vector<double> values = parse_number_list(value);
+            if (values.size() != 9) {
+                throw std::runtime_error(
+                    "motivation_rate must contain exactly 9 values at " +
+                    parameter_file.string() + ":" + std::to_string(key_line_number));
+            }
+
+            int index = 0;
+            for (int row = 0; row < 3; row++) {
+                for (int col = 0; col < 3; col++) {
+                    motivation_change[row][col] = values[index++];
+                }
+            }
+            found_motivation_rate = true;
+        }
+        else if (key == "lx") {
+            lx = parse_positive_double_parameter(key, value);
+        }
+        else if (key == "ly") {
+            ly = parse_positive_double_parameter(key, value);
+        }
+        else if (key == "n_theta") {
+            n_theta = parse_positive_int_parameter(key, value);
+        }
+        else if (key == "n_feeder") {
+            n_feeder = parse_positive_int_parameter(key, value);
+        }
+        else if (key == "bodysize") {
+            bodysize = parse_positive_double_parameter(key, value);
+        }
+        else if (key == "stepsize") {
+            stepsize = parse_positive_double_parameter(key, value);
+        }
+        else if (key == "sensingrange") {
+            sensingrange = parse_positive_double_parameter(key, value);
+        }
+        else if (key == "sigma_blur") {
+            sigma_blur = parse_positive_double_parameter(key, value);
+        }
+        else if (key == "feeder_coordinates") {
+            feeder_coordinates = parse_feeder_coordinates(value);
+            found_feeder_coordinates = true;
+        }
+    };
+
+    auto flush_pending = [&]() {
+        if (!pending_key.empty()) {
+            process_parameter(pending_key, pending_value, pending_line_number);
+            pending_key.clear();
+            pending_value.clear();
+            pending_line_number = 0;
+        }
+    };
 
     while (std::getline(input, line)) {
         line_number++;
@@ -117,32 +241,91 @@ static void load_parameters(const fs::path& parameter_file)
 
         const size_t equals_pos = line.find('=');
         if (equals_pos == std::string::npos) {
+            if (!pending_key.empty()) {
+                pending_value += "; " + line;
+            }
             continue;
         }
 
-        const std::string key = normalize_key(line.substr(0, equals_pos));
-        const std::string value = trim(line.substr(equals_pos + 1));
-
-        if (key == "motivation_rate") {
-            const std::vector<double> values = parse_number_list(value);
-            if (values.size() != 9) {
-                throw std::runtime_error(
-                    "motivation_rate must contain exactly 9 values at " +
-                    parameter_file.string() + ":" + std::to_string(line_number));
-            }
-
-            int index = 0;
-            for (int row = 0; row < 3; row++) {
-                for (int col = 0; col < 3; col++) {
-                    motivation_change[row][col] = values[index++];
-                }
-            }
-            found_motivation_rate = true;
-        }
+        flush_pending();
+        pending_key = normalize_key(line.substr(0, equals_pos));
+        pending_value = trim(line.substr(equals_pos + 1));
+        pending_line_number = line_number;
     }
 
-    if (!found_motivation_rate) {
-        throw std::runtime_error("Missing motivation_rate key in parameter file: " + parameter_file.string());
+    flush_pending();
+
+	if (!found_motivation_rate) {
+		throw std::runtime_error("Missing motivation_rate key in parameter file: " + parameter_file.string());
+	}
+
+    if (n_theta < 4 || n_theta % 4 != 0) {
+        throw std::runtime_error("n_theta must be at least 4 and divisible by 4");
+    }
+
+    if (!found_feeder_coordinates) {
+        throw std::runtime_error("Missing feeder_coordinates key in parameter file: " + parameter_file.string());
+    }
+
+    validate_feeder_coordinates();
+
+    unit_angle = 2.0 * pi / n_theta;
+}
+
+static int print_population_summary(const std::vector<PenPopulation>& pens)
+{
+    int total_animals = 0;
+    for (const PenPopulation& pen_data : pens) {
+        total_animals += static_cast<int>(pen_data.animals.size());
+    }
+
+    cout << "Parsing grouping information from input file...\n";
+    cout << "Found " << total_animals << " animals in total\n";
+    cout << "Found " << pens.size() << " pens\n";
+    for (const PenPopulation& pen_data : pens) {
+        cout << "Pen " << pen_data.pen << " has "
+             << pen_data.animals.size() << " animals\n";
+    }
+
+    return total_animals;
+}
+
+static const char* bite_force_dist_name(int bfdc)
+{
+    if (bfdc == 0) return "Gaussian/normal";
+    if (bfdc == 1) return "Poisson+1";
+    if (bfdc == 2) return "lognormal";
+    if (bfdc == 3) return "uniform";
+    return "unknown";
+}
+
+static void print_parameter_summary(int steps, double trait4_sigmaE, int bfdc)
+{
+    cout << "Loaded simulation parameters:\n";
+    cout << "  lx = " << lx << "\n";
+    cout << "  ly = " << ly << "\n";
+    cout << "  n_theta = " << n_theta << "\n";
+    cout << "  n_feeder = " << n_feeder << "\n";
+    cout << "  bodysize = " << bodysize << "\n";
+    cout << "  stepsize = " << stepsize << "\n";
+    cout << "  sensingrange = " << sensingrange << "\n";
+    cout << "  sigma_blur = " << sigma_blur << "\n";
+    cout << "  unit_angle = " << unit_angle << "\n";
+    cout << "  simulation steps = " << steps << "\n";
+    cout << "  BiteForceSigmaE = " << trait4_sigmaE << "\n";
+    cout << "  BiteForceDist = " << bite_force_dist_name(bfdc) << "\n";
+
+    cout << "  motivation_rate:\n";
+    for (int row = 0; row < 3; row++) {
+        cout << "    " << motivation_change[row][0] << ", "
+             << motivation_change[row][1] << ", "
+             << motivation_change[row][2] << "\n";
+    }
+
+    cout << "  feeder_coordinates:\n";
+    for (int i = 0; i < static_cast<int>(feeder_coordinates.size()); i++) {
+        cout << "    Feeder " << i + 1 << ": x=" << feeder_coordinates[i][0]
+             << ", y=" << feeder_coordinates[i][1] << "\n";
     }
 }
 
@@ -248,25 +431,25 @@ int main(int argc, char* argv[])
     // ----- Parse command line arguments -----
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
-        if (arg == "-i" && i + 1 < argc) {
+        if ((arg == "-i" || arg == "--input") && i + 1 < argc) {
             input_file = argv[++i];
         }
         else if (arg == "--seed" && i + 1 < argc) {
             seed = std::stoi(argv[++i]);  // <<< store in optional
         }
-        else if (arg == "-o" && i + 1 < argc) {
+        else if ((arg == "-o" || arg == "--output") && i + 1 < argc) {
             output_file = argv[++i];
         }
         else if ((arg == "-p" || arg == "--param" || arg == "--parameter") && i + 1 < argc) {
             parameter_file = argv[++i];
         }
-        else if (arg == "--step" && i + 1 < argc) {
+        else if ((arg == "--step" || arg == "--steps") && i + 1 < argc) {
             steps = std::stoi(argv[++i]);
         }
-        else if (arg == "--BiteForceSigmaE" && i + 1 < argc) {
+        else if ((arg == "--BiteForceSigmaE" || arg == "--bite-force-sigma-e") && i + 1 < argc) {
             trait4_sigmaE = std::stod(argv[++i]);
         }
-        else if (arg == "--BiteForceDist" && i + 1 < argc) {
+        else if ((arg == "--BiteForceDist" || arg == "--bite-force-dist") && i + 1 < argc) {
             bfdc = get_bfdc(argv[++i]);
         }
         else {
@@ -276,7 +459,7 @@ int main(int argc, char* argv[])
     }
 
     if (input_file.empty()) {
-        cerr << "Error: -i input_file is required\n";
+        cerr << "Error: -i/--input input_file is required\n";
         return 1;
     }
 
@@ -302,17 +485,10 @@ int main(int argc, char* argv[])
         output_file = input_file.parent_path() / ("output_" + input_file.filename().string());
     }
 
-    cout << "Input file:  " << input_file << "\n";
-    cout << "Parameter file: " << parameter_file << "\n";
-    cout << "Output file: " << output_file << "\n";
-    cout << "Steps:       " << steps << "\n";
-    cout << "Pens:        " << pens.size() << "\n";
-
-    int total_animals = 0;
-    for (const PenPopulation& pen_data : pens) {
-        total_animals += static_cast<int>(pen_data.animals.size());
-    }
-    cout << "Animals:     " << total_animals << "\n";
+    cout << "Input file:  " << fs::absolute(input_file) << "\n";
+    cout << "Parameter file: " << fs::absolute(parameter_file) << "\n";
+    cout << "Output file: " << fs::absolute(output_file) << "\n";
+    print_parameter_summary(steps, trait4_sigmaE, bfdc);
 
     if (seed.has_value()) {
         cout << "Seed:        " << seed.value() << " (using deterministic per-thread RNG)\n";
@@ -320,6 +496,8 @@ int main(int argc, char* argv[])
     else {
         cout << "Seed:        (not provided, using time-based RNG per thread)\n";
     }
+
+    print_population_summary(pens);
 
     // ---- Run pens in parallel with OpenMP ----
     #pragma omp parallel for schedule(dynamic)

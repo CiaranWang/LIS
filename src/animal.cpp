@@ -23,9 +23,9 @@ animal::animal() :
 		threshold[i] = 100.0;
 	}
 
-	pro_theta[0] = 1.0;
-	for (int i = 1; i < n_theta; ++i) {
-		pro_theta[i] = 0.0;
+	pro_theta.assign(n_theta, 0.0);
+	if (!pro_theta.empty()) {
+		pro_theta[0] = 1.0;
 	}
 }
 
@@ -59,10 +59,7 @@ void animal::initialize_(std::mt19937& rng, int animal_count) {
 
 	angle = uniformrand(rng, 0.0, 2.0 * pi);
 
-	for (int i = 0; i < n_theta; i++)
-	{
-		pro_theta[i] = double(1) / n_theta;
-	}
+	pro_theta.assign(n_theta, 1.0 / n_theta);
 
 	n_peck.assign(animal_count, 0.0);
 	n_interact.assign(animal_count, 0);

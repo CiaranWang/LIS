@@ -43,28 +43,31 @@ At each simulation step, animals update behaviour, move through the pen, respond
 
 The code has been used with CMake/Ninja on Windows and includes presets for Windows, Linux, and macOS. On Linux clusters, the example `lis_test.sh` script shows a SLURM-style execution pattern.
 
-## Build
+LIS uses OpenMP to run pens in parallel. By default, it will use as many CPU threads as the OpenMP runtime makes available. On shared systems or clusters, limit this externally, for example with scheduler CPU settings or `OMP_NUM_THREADS`.
 
-From the project root:
+## Installation
 
-```bash
-cmake -S . -B build
-cmake --build build
-```
-
-If using CMake presets, for example on Windows:
+Clone the repository and build LIS from source:
 
 ```bash
-cmake --preset x64-release
-cmake --build out/build/x64-release
+git clone https://github.com/CiaranWang/LIS.git
+cd LIS
+mkdir -p build
+cd build
+cmake ../
+make -j 8
 ```
 
-The executable is named `LIS`.
+The executable will be created in the `build` directory:
+
+```bash
+./LIS --help
+```
 
 ## Usage
 
 ```bash
-./LIS -i input_example.txt -p parameter.ini --seed 123456 -o result.txt --step 100 --BiteForceSigmaE 0.37 --BiteForceDist lognormal
+./LIS --input input_example.txt --param parameter.ini --seed 123456 --output result.txt --steps 100 --bite-force-sigma-e 0.37 --bite-force-dist lognormal
 ```
 
 Options:
@@ -74,14 +77,24 @@ Options:
 -v, -V, --version                 Print version
 -u, -U, --update                  Update from GitHub and rebuild
 
--i PATH                           Input phenotype file
--p PATH, --param PATH             Parameter file, default: parameter.ini
--o PATH                           Output result file
+-i PATH, --input PATH             Input phenotype file
+-p PATH, --param PATH,
+--parameter PATH                  Parameter file, default: parameter.ini
+-o PATH, --output PATH            Output result file
+
 --seed N                          Integer random seed
---step N                          Number of simulation steps
---BiteForceSigmaE SIGMA           Standard deviation for observed bite force
---BiteForceDist TYPE              Bite force observation distribution
+--step N, --steps N               Number of simulation steps
+
+--BiteForceSigmaE SIGMA,
+--bite-force-sigma-e SIGMA        Standard deviation for observed bite force
+
+--BiteForceDist TYPE,
+--bite-force-dist TYPE            Bite force observation distribution
 ```
+
+The parameter file is required at runtime. If `-p`, `--param`, or `--parameter` is not provided, LIS looks for `parameter.ini` in the current working directory. If that file is missing, the program stops with an error before running simulations.
+
+If `-o` or `--output` is not provided, LIS writes to `output_<input filename>` in the same directory as the input file. For reproducible workflows, especially batch runs, it is recommended to provide an explicit output path with `--output`.
 
 Supported `--BiteForceDist` values:
 
@@ -107,19 +120,49 @@ The program scans this file before running the simulation and automatically dete
 - the number of pens
 - the animals belonging to each pen
 
-Pens may contain different numbers of animals. The input does not need to contain exactly 14 animals per pen, and the simulation no longer assumes exactly 400 pens.
-
 ## Parameter File
 
-By default, LIS reads model parameters from `parameter.ini`. A different file can be provided with `-p`, `--param`, or `--parameter`.
+By default, LIS reads model parameters from `parameter.ini`. A different file can be provided with `-p`, `--param`, or `--parameter`. The parameter file is required.
 
 The motivation-rate matrix is read from the `motivation_rate` key:
 
 ```ini
-motivation_rate = -5/9, 1/15, 2/45; 0, -5/9, 5/24; 0, 5/9, -5/24
+motivation_rate =
+    -5/9,  1/15,  2/45
+       0,  -5/9,  5/24
+       0,   5/9, -5/24
 ```
 
 The matrix contains 9 values. Rows are the motivations being updated: eat, rest, and walk. Columns are the behaviour performed in the current step: eat, rest, and walk. Values may be decimals or simple fractions.
+
+The same file also contains the main pen, feeder, movement, and sensing parameters:
+
+```ini
+lx = 450
+ly = 350
+n_theta = 8
+n_feeder = 1
+feeder_coordinates =
+    225, 175
+bodysize = 40
+stepsize = 40
+sensingrange = 40
+sigma_blur = 60
+```
+
+`n_theta` must be at least 4 and divisible by 4 because the movement-direction logic uses quarter-turn calculations.
+
+`feeder_coordinates` must contain one `x,y` pair for each feeder. For multiple feeders, write one pair per continuation line:
+
+```ini
+n_feeder = 3
+feeder_coordinates =
+    50, 50
+    225, 175
+    400, 300
+```
+
+Before running the simulation, LIS checks that every feeder is inside the pen area: `x >= 0`, `x <= lx`, `y >= 0`, and `y <= ly`. If a feeder is outside the pen, the program prints an error naming the feeder and its coordinates.
 
 ## Output Format
 
@@ -152,25 +195,14 @@ This makes repeated runs reproducible for the same executable, input file, model
 
 ## Model Constants
 
-Several core model settings are currently defined in `include/lis.h`, including:
-
-- pen dimensions
-- number of feeders
-- feeder size
-- animal body size
-- movement step size
-- sensing range
-- movement direction discretisation
-- density blur parameter
-
-The motivation-rate matrix is already read from `parameter.ini`. For broader academic use, the remaining compiled constants should eventually move into the same parameter file or command-line options.
+Several core model settings are read from `parameter.ini`, including pen dimensions, number of movement directions, number of feeders, feeder coordinates, body size, movement step size, sensing range, density blur, and the motivation-rate matrix.
 
 ## Example SLURM Run
 
 The `lis_test.sh` file gives an example cluster job:
 
 ```bash
-srun -c 16 ~/LIS/build/LIS -i ./input_example.txt -p ./parameter.ini --seed 123456 --step 1000 -o test_output.txt
+~/LIS/build/LIS --input ./input_example.txt --param ./parameter.ini --seed 123456 --steps 1000 --output test_output.txt
 ```
 
 Adjust paths, CPU count, memory, and wall time for your local cluster environment.

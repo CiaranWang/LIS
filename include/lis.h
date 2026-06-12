@@ -6,26 +6,28 @@
 #include <string>
 #include <random>
 #include <vector>
+#include <array>
 
 using namespace std;
 
 #define pi ((double)3.14159265358979323846)  //just pi, dont change pi
-#define lx ((double)450)        //length of the pen (in cm)
-#define ly ((double)350)        //width of the pen (in cm)
-#define n_theta ((int)8)         //nr directions that animals are allowed to move
-#define n_feeder ((int)1)       //nr of feeders
-#define feedersize ((int)40)     //feeder size (in cm)
-#define bodysize ((double)40)    //the diamater of the animal
-#define stepsize ((double)40)   //the speed of animal (cm per step of simulation)
-#define sensingrange ((double)40)  //distance that animal can see/sense,events outside never impact
-#define sigma_blur ((double)60)  //sigma of the Gaussian Blurrrr
 
 extern double unit_angle;
 extern double motivation_change[3][3];
+extern double lx;           // length of the pen (in cm)
+extern double ly;           // width of the pen (in cm)
+extern int n_theta;         // number of directions animals are allowed to move
+extern int n_feeder;        // number of feeders
+extern double bodysize;     // diameter of the animal
+extern double stepsize;     // movement distance per simulation step (cm)
+extern double sensingrange; // distance animals can see/sense
+extern double sigma_blur;   // sigma of the Gaussian blur
+extern std::vector<std::array<double, 2>> feeder_coordinates;
+
 class animal;
 
-void define_feeders(double(&feeder)[n_feeder][3]);
-void define_feeders_detti(double(&feeder)[n_feeder][3]);
+void define_feeders(std::vector<std::array<double, 3>>& feeder);
+void define_feeders_detti(std::vector<std::array<double, 3>>& feeder);
 void run_pen(const std::vector<animal>& pen_animals,
 	int _PEN_,
 	std::ofstream& asreml_out,

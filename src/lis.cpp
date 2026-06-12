@@ -6,6 +6,7 @@
 #include <string>
 #include <cstdlib>
 #include <random>
+#include <array>
 
 #include "lis.h"
 #include "random.h"
@@ -47,7 +48,7 @@ void run_pen(const std::vector<animal>& pen_animals,
 		//report_pro_theta(t[i]);
 	}
 
-	double feeder[n_feeder][3]{ 0 };
+	std::vector<std::array<double, 3>> feeder(n_feeder);
 	define_feeders_detti(feeder);
 	//std::cout << "Pen " << _PEN_ << ": feeder set up, motivation initialized, phenotypes read\n";
 	
@@ -283,33 +284,17 @@ void run_pen(const std::vector<animal>& pen_animals,
 
 	//cout<< "the end of pen: " << _PEN_ << endl;
 }
-void define_feeders(double(&feeder)[n_feeder][3]) {
-
-	if (n_feeder >= 2)
-	{
-		for (int i = 0; i < n_feeder / 2; i++)
-		{
-			feeder[i][0] = 0;
-			feeder[i][1] = i * ly / (n_feeder / 2.0) + ly / n_feeder;
-
-			feeder[i + n_feeder / 2][0] = lx;
-			feeder[i + n_feeder / 2][1] = i * ly / (n_feeder / 2.0) + ly / n_feeder;
-		}
-
-		for (int i = 0; i < n_feeder; i++)
-		{
-			feeder[i][2] = 0;
-		}
-	}
+void define_feeders(std::vector<std::array<double, 3>>& feeder) {
+	define_feeders_detti(feeder);
 }
-void define_feeders_detti(double(&feeder)[n_feeder][3]) {
-	for (int i = 0; i < n_feeder; i++)
+void define_feeders_detti(std::vector<std::array<double, 3>>& feeder) {
+	for (int i = 0; i < static_cast<int>(feeder.size()); i++)
 	{
-		feeder[i][0] = 0;
-		feeder[i][1] = 0;
+		feeder[i][0] = feeder_coordinates[i][0];
+		feeder[i][1] = feeder_coordinates[i][1];
 	}
 
-	for (int i = 0; i < n_feeder; i++)
+	for (int i = 0; i < static_cast<int>(feeder.size()); i++)
 	{
 		feeder[i][2] = 0;
 	}

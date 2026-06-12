@@ -9,13 +9,18 @@ Options:
   -u, -U, --update        Automatically update from github and rebuild 
   -v, -V, --version       Print program version and exit
   
-  -i [/PATH/TO/INPUT_FILE.txt]    Input phenotype file
-  -p [/PATH/TO/parameter.ini]     Parameter file (default: parameter.ini)
+  -i, --input [/PATH/TO/INPUT_FILE.txt]
+                              Input phenotype file
+  -p, --param, --parameter [/PATH/TO/parameter.ini]
+                              Parameter file (default: parameter.ini; required at runtime)
   --seed [N]                      Integer random seed (default: time-based)
-  -o [/PATH/TO/OUTPUT_FILE.txt]   Output result file
-  --step [N]                Number of simulation steps
-  --BiteForceSigmaE [SIGMA] Standard deviation of bite force (positive real number)
-  --BiteForceDist [TYPE] Distribution to transform bite force trait value to observation 
+  -o, --output [/PATH/TO/OUTPUT_FILE.txt]
+                              Output result file
+  --step, --steps [N]        Number of simulation steps
+  --BiteForceSigmaE, --bite-force-sigma-e [SIGMA]
+                              Standard deviation of bite force (positive real number)
+  --BiteForceDist, --bite-force-dist [TYPE]
+                              Distribution to transform bite force trait value to observation 
    [TYPE] = Gaussian:  observed bite force is simply drawn from a normal distribution, with 
                        mean = biter's trait value, sd = BiteForceSigmaE value;
    [TYPE] = normal:    same with Gaussian;
@@ -31,7 +36,7 @@ Options:
 
 
 Example:
-  ./LIS -i pheno.txt -p parameter.ini --seed 123456 -o result.txt --step 100 --BiteForceSigmaE 0.37 --BiteForceDist loGNorMaL
+  ./LIS --input pheno.txt --param parameter.ini --seed 123456 --output result.txt --steps 100 --bite-force-sigma-e 0.37 --bite-force-dist loGNorMaL
 
 Report bugs to: zhuoshi.wang@wur.nl
 )";
