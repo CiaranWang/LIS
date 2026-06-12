@@ -8,7 +8,7 @@
 #SBATCH -e error_test_lis.txt
 #SBATCH --array=1
 
-mkdir ./lis_test/
-cd ./lis_test/
+rm -rf lis_test/
+mkdir -p lis_test
 
-~/LIS/build/LIS --input ./input_example.txt --param ./parameter.ini --seed 123456 --steps 1000 --output test_output.txt
+./build/LIS --input input_example.txt --param parameter.ini --seed 123456 --steps 100 --output lis_test/test_output.txt
