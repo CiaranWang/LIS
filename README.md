@@ -24,15 +24,13 @@ At each simulation step, animals update behaviour, move through the pen, respond
 ```text
 .
 |-- CMakeLists.txt          CMake build configuration
-|-- CMakePresets.json       Visual Studio/Ninja build presets
 |-- LICENSE.txt             MIT license
 |-- README.md               Project documentation
 |-- input_example.txt       Example phenotype input file
 |-- parameter.ini           Default model parameter file
 |-- lis_test.sh             Example SLURM job script
 |-- include/                Header files
-|-- src/                    C++ source files
-`-- var_check/              Validation/checking files and R script
+`-- src/                    C++ source files
 ```
 
 ## Requirements

@@ -27,7 +27,7 @@
 namespace fs = std::filesystem;
 using namespace std;
 
-static const std::string PROGRAM_VERSION = "0.6.r";
+static const std::string PROGRAM_VERSION = "0.7.r";
  
 double lx = 450.0;
 double ly = 350.0;
