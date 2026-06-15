@@ -222,6 +222,10 @@ This project is close to being usable as public academic software, but the follo
 - decide whether generated files such as build outputs, `.vs/`, `.Rhistory`, and large result files should remain outside version control
 - align the compiled binary version with the source version before release
 
+## Acknowledgements
+
+This work was financially supported by the Dutch Research Council (NWO-TTW) and Hendrix Genetics BV (Boxmeer, the Netherlands) through the SmartTurkeys project (project number 17238), under the NWO-TTW Open Technology Program.
+
 ## License
 
 This project is released under the MIT License. See `LICENSE.txt` for details.

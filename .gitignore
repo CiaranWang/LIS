@@ -3,6 +3,16 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# LIS local/generated files
+var_check/
+build/
+CMakePresets.json
+.Rhistory
+test_output.txt
+lis_test/
+output_test_lis.txt
+error_test_lis.txt
+
 # User-specific files
 *.rsuser
 *.suo
