@@ -118,6 +118,57 @@ The program scans this file before running the simulation and automatically dete
 - the number of pens
 - the animals belonging to each pen
 
+## Motivation And Behaviour
+
+Each animal has three internal motivation values: eating, resting, and walking. In the current model, the threshold is fixed at 100 for each behaviour. When a motivation reaches or exceeds 100, the corresponding behaviour can be triggered.
+
+At each simulation step, LIS uses the following decision tree:
+
+1. If the animal's current behaviour still has positive motivation, the animal continues that behaviour.
+2. Otherwise, LIS checks eating motivation first. If eating motivation is at or above the threshold, the animal eats.
+3. If eating is not triggered, LIS checks resting motivation. If resting motivation is at or above the threshold, the animal rests.
+4. If resting is not triggered, LIS checks walking motivation. If walking motivation is at or above the threshold, the animal walks.
+5. If none of the motivations reaches the threshold, the animal rests by default.
+
+This means that when multiple motivations are above threshold at the same time, eating has priority over resting, and resting has priority over walking.
+
+After an animal performs a behaviour, the motivation-rate matrix updates all three motivations. Rows are the motivations being updated, and columns are the behaviour performed during the current step:
+
+```text
+                  performed behaviour
+                  eat      rest     walk
+updated eat       m00      m01      m02
+updated rest      m10      m11      m12
+updated walk      m20      m21      m22
+```
+
+For example, if an animal walks, LIS uses the `walk` column of the matrix to update eating, resting, and walking motivations. Users can tune the entries in `motivation_rate` in `parameter.ini` to create different behaviour-cycle dynamics.
+
+## Social Traits
+
+The input file provides four traits for each animal:
+
+- `Trait_1`: performer effect
+- `Trait_2`: recipient effect
+- `Trait_3`: social tendency
+- `Trait_4`: bite/peck force or interaction intensity trait
+
+`Trait_3` affects movement during walking. Animals with different social tendency values differ in how strongly their movement direction is pulled toward or away from local animal density.
+
+When two animals are within the sensing range, LIS calculates a directed interaction probability from the performer animal's `Trait_1` and the receipient animal's `Trait_2`:
+
+```text
+p(performer -> receipient) = logistic(performer Trait_1 + receipient Trait_2)
+```
+
+The current logistic function is:
+
+```text
+logistic(x) = 1 / (1 + exp(-x))
+```
+
+LIS then draws a 0/1 interaction outcome from this probability. If the outcome is 1, an interaction is recorded and an observed interaction intensity is generated from the performer animal's `Trait_4`. The uncertainty or residual variation of this observed intensity is controlled by the command-line argument `--bite-force-sigma-e` / `--BiteForceSigmaE`, and the observation distribution is selected with `--bite-force-dist` / `--BiteForceDist`.
+
 ## Parameter File
 
 By default, LIS reads model parameters from `parameter.ini`. A different file can be provided with `-p`, `--param`, or `--parameter`. The parameter file is required.
