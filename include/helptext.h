@@ -17,26 +17,26 @@ Options:
   -o, --output [/PATH/TO/OUTPUT_FILE.txt]
                               Output result file
   --step, --steps [N]        Number of simulation steps
-  --BiteForceSigmaE, --bite-force-sigma-e [SIGMA]
-                              Standard deviation of bite force (positive real number)
-  --BiteForceDist, --bite-force-dist [TYPE]
-                              Distribution to transform bite force trait value to observation 
+
+Parameter file interaction settings:
+  bite_force_sigma_e        Standard deviation of bite force (positive real number)
+  bite_force_dist           Distribution to transform bite force trait value to observation
    [TYPE] = Gaussian:  observed bite force is simply drawn from a normal distribution, with 
-                       mean = biter's trait value, sd = BiteForceSigmaE value;
+                       mean = biter's trait value, sd = bite_force_sigma_e value;
    [TYPE] = normal:    same with Gaussian;
    [TYPE] = Poisson+1: observed bite force is drawn from a poisson distribution, with 
                        mean = biter's trait value, then plus one;
    [TYPE] = lognormal: observed bite force is first drawn from a normal distribution, with 
-                       mean = biter trait value, sd = BiteForceSigmaE value. 
+                       mean = biter trait value, sd = bite_force_sigma_e value.
                        Then natural exponential is taken.
    [TYPE] = uniform:   observed bite force is simply drawn from uniform distribution, with 
-                       min = biter trait value - BiteForceSigmaE,
-                       max = biter trait value + BiteForceSigmaE;
-   To make life easier, this [TYPE] argument is case insensitive, so POiSSoN+1, gaussIAn are ok.
+                       min = biter trait value - bite_force_sigma_e,
+                       max = biter trait value + bite_force_sigma_e;
+   To make life easier, this [TYPE] value is case insensitive, so POiSSoN+1, gaussIAn are ok.
 
 
 Example:
-  ./LIS --input pheno.txt --param parameter.ini --seed 123456 --output result.txt --steps 100 --bite-force-sigma-e 0.37 --bite-force-dist loGNorMaL
+  ./LIS --input pheno.txt --param parameter.ini --seed 123456 --output result.txt --steps 100
 
 Report bugs to: zhuoshi.wang@wur.nl
 )";

@@ -65,7 +65,7 @@ The executable will be created in the `build` directory:
 ## Usage
 
 ```bash
-./LIS --input input_example.txt --param parameter.ini --seed 123456 --output result.txt --steps 100 --bite-force-sigma-e 0.37 --bite-force-dist lognormal
+./LIS --input input_example.txt --param parameter.ini --seed 123456 --output result.txt --steps 100
 ```
 
 Options:
@@ -82,19 +82,13 @@ Options:
 
 --seed N                          Integer random seed
 --step N, --steps N               Number of simulation steps
-
---BiteForceSigmaE SIGMA,
---bite-force-sigma-e SIGMA        Standard deviation for observed bite force
-
---BiteForceDist TYPE,
---bite-force-dist TYPE            Bite force observation distribution
 ```
 
 The parameter file is required at runtime. If `-p`, `--param`, or `--parameter` is not provided, LIS looks for `parameter.ini` in the current working directory. If that file is missing, the program stops with an error before running simulations.
 
 If `-o` or `--output` is not provided, LIS writes to `output_<input filename>` in the same directory as the input file. For reproducible workflows, especially batch runs, it is recommended to provide an explicit output path with `--output`.
 
-Supported `--BiteForceDist` values:
+Supported `bite_force_dist` values:
 
 - `Gaussian` or `normal`
 - `Poisson+1`
@@ -167,7 +161,7 @@ The current logistic function is:
 logistic(x) = 1 / (1 + exp(-x))
 ```
 
-LIS then draws a 0/1 interaction outcome from this probability. If the outcome is 1, an interaction is recorded and an observed interaction intensity is generated from the performer animal's `Trait_4`. The uncertainty or residual variation of this observed intensity is controlled by the command-line argument `--bite-force-sigma-e` / `--BiteForceSigmaE`, and the observation distribution is selected with `--bite-force-dist` / `--BiteForceDist`.
+LIS then draws a 0/1 interaction outcome from this probability. If the outcome is 1, an interaction is recorded and an observed interaction intensity is generated from the performer animal's `Trait_4`. The uncertainty or residual variation of this observed intensity is controlled by `bite_force_sigma_e` in `parameter.ini`, and the observation distribution is selected with `bite_force_dist`.
 
 ## Parameter File
 
@@ -184,7 +178,7 @@ motivation_rate =
 
 The matrix contains 9 values. Rows are the motivations being updated: eat, rest, and walk. Columns are the behaviour performed in the current step: eat, rest, and walk. Values may be decimals or simple fractions.
 
-The same file also contains the main pen, feeder, movement, and sensing parameters:
+The same file also contains the main pen, feeder, movement, sensing, and interaction parameters:
 
 ```ini
 lx = 450
@@ -193,10 +187,12 @@ n_theta = 8
 n_feeder = 1
 feeder_coordinates =
     225, 175
-bodysize = 40
-stepsize = 40
-sensingrange = 40
+body_size = 40
+step_size = 40
+sensing_range = 40
 sigma_blur = 60
+bite_force_sigma_e = 1
+bite_force_dist = lognormal
 ```
 
 `n_theta` must be at least 4 and divisible by 4 because the movement-direction logic uses quarter-turn calculations.
@@ -244,7 +240,7 @@ This makes repeated runs reproducible for the same executable, input file, model
 
 ## Model Constants
 
-Several core model settings are read from `parameter.ini`, including pen dimensions, number of movement directions, number of feeders, feeder coordinates, body size, movement step size, sensing range, density blur, and the motivation-rate matrix.
+Several core model settings are read from `parameter.ini`, including pen dimensions, number of movement directions, number of feeders, feeder coordinates, body size, movement step size, sensing range, density blur, bite-force observation settings, and the motivation-rate matrix.
 
 ## Example SLURM Run
 
