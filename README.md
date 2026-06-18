@@ -90,7 +90,7 @@ If `-o` or `--output` is not provided, LIS writes to `output_<input filename>` i
 
 ## Input Format
 
-The input file is a whitespace-delimited phenotype table with a header:
+The input file is a whitespace-delimited phenotype table with a header; spaces, tabs, or mixed whitespace are supported:
 
 ```text
 ID Pen Trait_1 Trait_2 Trait_3 Trait_4
