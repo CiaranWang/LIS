@@ -88,15 +88,6 @@ The parameter file is required at runtime. If `-p`, `--param`, or `--parameter` 
 
 If `-o` or `--output` is not provided, LIS writes to `output_<input filename>` in the same directory as the input file. For reproducible workflows, especially batch runs, it is recommended to provide an explicit output path with `--output`.
 
-Supported `bite_force_dist` values:
-
-- `Gaussian` or `normal`
-- `Poisson+1`
-- `lognormal`
-- `uniform`
-
-Distribution names are case-insensitive.
-
 ## Input Format
 
 The input file is a whitespace-delimited phenotype table with a header:
