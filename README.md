@@ -246,18 +246,6 @@ mkdir -p lis_test
 
 Adjust paths, CPU count, memory, and wall time for your local cluster environment.
 
-## Public-Release Notes
-
-This project is close to being usable as public academic software, but the following items should be addressed before a formal public release:
-
-- replace the placeholder copyright fields in `LICENSE.txt`
-- document the biological interpretation and units of all model parameters
-- add automated tests for input parsing, random-number reproducibility, and key probability functions
-- add a small input file for quick smoke tests
-- document expected output for the example input
-- decide whether generated files such as build outputs, `.vs/`, `.Rhistory`, and large result files should remain outside version control
-- align the compiled binary version with the source version before release
-
 ## Acknowledgements
 
 This work was financially supported by the Dutch Research Council (NWO-TTW) and Hendrix Genetics BV (Boxmeer, the Netherlands) through the SmartTurkeys project (project number 17238), under the NWO-TTW Open Technology Program.
